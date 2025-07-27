@@ -12,4 +12,7 @@ public interface CustomerDAO {
     boolean deleteCustomer(int accountNumber) throws DaoException;
     Optional<Customer> getCustomerByAccountNumber(int accountNumber) throws DaoException;
     List<Customer> getAllCustomers() throws DaoException;
+
+    // ✅ NEW METHOD
+    boolean doesCustomerExist(int accountNumber) throws DaoException;
 }
