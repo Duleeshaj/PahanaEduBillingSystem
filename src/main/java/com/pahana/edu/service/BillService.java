@@ -2,6 +2,8 @@ package com.pahana.edu.service;
 
 import com.pahana.edu.dao.BillDAO;
 import com.pahana.edu.dao.BillDAOImpl;
+import com.pahana.edu.dao.ConfigDAO;
+import com.pahana.edu.dao.ConfigDAOImpl;
 import com.pahana.edu.dao.CustomerDAO;
 import com.pahana.edu.dao.CustomerDAOImpl;
 import com.pahana.edu.exception.DaoException;
@@ -14,10 +16,12 @@ public class BillService {
 
     private final BillDAO billDAO;
     private final CustomerDAO customerDAO;
+    private final ConfigDAO configDAO;
 
     public BillService() {
         this.billDAO = new BillDAOImpl();
         this.customerDAO = new CustomerDAOImpl();
+        this.configDAO = new ConfigDAOImpl();
     }
 
     public boolean generateBill(int accountNumber, int unitsConsumed) throws ServiceException {
@@ -27,7 +31,14 @@ public class BillService {
                 throw new ServiceException("Cannot generate bill: Customer with account number " + accountNumber + " does not exist.");
             }
 
-            double rate = 12.50;
+            // ✅ Fetch dynamic unit rate from DB
+            double rate;
+            try {
+                rate = configDAO.getUnitRate();
+            } catch (DaoException e) {
+                throw new ServiceException("Failed to retrieve unit rate from configuration", e);
+            }
+
             double total = unitsConsumed * rate;
 
             Bill bill = new Bill();
