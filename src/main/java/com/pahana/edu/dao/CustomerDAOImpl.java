@@ -97,6 +97,26 @@ public class CustomerDAOImpl implements CustomerDAO {
         }
     }
 
+    @Override
+    public boolean doesCustomerExist(int accountNumber) throws DaoException {
+        String query = "SELECT COUNT(*) FROM customers WHERE account_number = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, accountNumber);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                } else {
+                    return false;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DaoException("Failed to check if customer exists", e);
+        }
+    }
+
     private Customer mapRow(ResultSet rs) throws SQLException {
         Customer c = new Customer();
         c.setAccountNumber(rs.getInt("account_number"));
