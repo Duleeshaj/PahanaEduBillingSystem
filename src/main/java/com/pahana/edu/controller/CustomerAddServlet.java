@@ -3,11 +3,12 @@ package com.pahana.edu.controller;
 import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.Customer;
 import com.pahana.edu.service.CustomerService;
-import com.pahana.edu.controller.util.CustomerRequestMapper;
+import com.pahana.edu.util.CustomerRequestMapper;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +23,12 @@ public class CustomerAddServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
+            throws IOException {
         try {
+            // Convert request data into Customer object
             Customer customer = CustomerRequestMapper.toCustomer(request);
+
+            // Call service to register customer
             boolean success = customerService.registerCustomer(customer);
 
             if (success) {

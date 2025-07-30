@@ -1,4 +1,4 @@
-package com.pahana.edu.controller.util;
+package com.pahana.edu.util;
 
 import com.pahana.edu.model.Customer;
 
