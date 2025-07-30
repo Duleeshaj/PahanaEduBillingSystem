@@ -5,7 +5,7 @@
 
     <servlet>
         <servlet-name>AddCustomerServlet</servlet-name>
-        <servlet-class>com.pahana.edu.controller.AddCustomerServlet</servlet-class>
+        <servlet-class>com.pahana.edu.controller.CustomerAddServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
