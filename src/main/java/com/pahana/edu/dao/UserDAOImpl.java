@@ -4,49 +4,122 @@ import com.pahana.edu.exception.DaoException;
 import com.pahana.edu.model.User;
 
 import java.sql.*;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
     @Override
-    public boolean registerUser(User user) throws DaoException {
-        String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+    public boolean addUser(User user) throws DaoException {
+        String sql = "INSERT INTO users (username, password, role, active) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getPassword()); // hashing can be added later
+            stmt.setString(2, user.getPassword()); // TODO: Add password hashing
             stmt.setString(3, user.getRole());
+            stmt.setBoolean(4, true); // New users are active by default
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DaoException("Failed to register user", e);
+            throw new DaoException("Failed to add user", e);
         }
     }
 
     @Override
-    public Optional<User> login(String username, String password) throws DaoException {
+    public User getUserByUsernameAndPassword(String username, String password) throws DaoException {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
-            stmt.setString(2, password);
-
+            stmt.setString(2, password); // TODO: Match hashed password
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    User user = new User();
-                    user.setUserId(rs.getInt("user_id"));
-                    user.setUsername(rs.getString("username"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRole(rs.getString("role"));
-                    return Optional.of(user);
+                    return new User(
+                            rs.getInt("user_id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("role"),
+                            rs.getBoolean("active")
+                    );
                 }
-                return Optional.empty();
             }
+            return null;
+        } catch (SQLException e) {
+            throw new DaoException("Failed to authenticate user", e);
+        }
+    }
+
+    @Override
+    public User getUserByUsername(String username) throws DaoException {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new User(
+                            rs.getInt("user_id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("role"),
+                            rs.getBoolean("active")
+                    );
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DaoException("Failed to get user by username", e);
+        }
+    }
+
+    @Override
+    public boolean updateUserActiveStatus(int userId, boolean isActive) throws DaoException {
+        String sql = "UPDATE users SET active = ? WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setBoolean(1, isActive);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DaoException("Failed to login user", e);
+            throw new DaoException("Failed to update user active status", e);
+        }
+    }
+
+    @Override
+    public boolean updateUserPassword(int userId, String newPassword) throws DaoException {
+        String sql = "UPDATE users SET password = ? WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, newPassword); // TODO: Hash before saving
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new DaoException("Failed to reset user password", e);
+        }
+    }
+
+    @Override
+    public List<String> getAuditLogs() throws DaoException {
+        List<String> logs = new ArrayList<>();
+        String sql = "SELECT action FROM audit_logs ORDER BY timestamp DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                logs.add(rs.getString("action"));
+            }
+            return logs;
+
+        } catch (SQLException e) {
+            throw new DaoException("Failed to retrieve audit logs", e);
         }
     }
 }
