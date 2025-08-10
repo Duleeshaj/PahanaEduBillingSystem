@@ -4,33 +4,38 @@ import com.pahana.edu.model.User;
 import com.pahana.edu.service.UserService;
 import com.pahana.edu.exception.ServiceException;
 
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Scanner;
 
 public class UserTestApp {
+    private static final Logger log = LoggerFactory.getLogger(UserTestApp.class);
+
     public static void main(String[] args) {
-        UserService service = new UserService();
+        UserService userService = new UserService();
 
-        try {
-            // Register new user
-            User user = new User();
-            user.setUsername("admin123");
-            user.setPassword("adminpass");
-            user.setRole("ADMIN");
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.print("Enter username: ");
+            String inputUsername = scanner.nextLine();
 
-            boolean registered = service.registerUser(user);
-            System.out.println("User registered: " + registered);
+            System.out.print("Enter password: ");
+            String inputPassword = scanner.nextLine();
 
-            // Try login
-            Optional<User> loggedIn = service.login("admin123", "adminpass");
-            if (loggedIn.isPresent()) {
-                System.out.println("✅ Logged in! Role: " + loggedIn.get().getRole());
-            } else {
-                System.out.println("❌ Login failed.");
+            try {
+                User user = userService.authenticateUser(inputUsername, inputPassword);
+
+                if (user != null && user.isActive()) {
+                    System.out.println("✅ Login successful!");
+                    System.out.println("Username: " + user.getUsername());
+                    System.out.println("Role: " + user.getRole());
+                } else {
+                    System.out.println("❌ Login failed: Invalid credentials or inactive user.");
+                }
+
+            } catch (ServiceException e) {
+                log.error("❌ Login exception occurred", e);
             }
-
-        } catch (ServiceException e) {
-            System.out.println("⚠️ Error: " + e.getMessage());
-            e.printStackTrace(); // Optional: show full error details
         }
     }
 }
