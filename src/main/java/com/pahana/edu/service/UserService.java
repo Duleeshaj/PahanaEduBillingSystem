@@ -5,6 +5,9 @@ import com.pahana.edu.dao.UserDAOImpl;
 import com.pahana.edu.exception.DaoException;
 import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.User;
+import com.pahana.edu.util.PasswordUtils;
+
+import java.util.List;
 
 public class UserService {
 
@@ -14,60 +17,61 @@ public class UserService {
         this.userDAO = new UserDAOImpl();
     }
 
-    /** Add a new user to the system with proper validations and role-based permissions */
+    // Add user with role-based permission
     public boolean addUser(User user, String addedByRole) throws ServiceException {
-        // Validate password requirement:
-        if (!"CUSTOMER".equalsIgnoreCase(user.getRole())) {
-            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-                throw new ServiceException("Password is required for role: " + user.getRole());
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            throw new ServiceException("Username cannot be empty");
+        }
+
+        // Role-based restrictions
+        if ("ADMIN".equalsIgnoreCase(addedByRole)) {
+            if (!user.getRole().equalsIgnoreCase("STAFF") &&
+                    !user.getRole().equalsIgnoreCase("CUSTOMER")) {
+                throw new ServiceException("Admin can only add Staff or Customer");
+            }
+        } else if ("STAFF".equalsIgnoreCase(addedByRole)) {
+            if (!user.getRole().equalsIgnoreCase("CUSTOMER")) {
+                throw new ServiceException("Staff can only add Customers");
             }
         } else {
-            // For CUSTOMER role, ignore password field (set null)
-            user.setPassword(null);
+            throw new ServiceException("Permission denied: Unknown role");
         }
 
+        // Hash password if present
         try {
-            if ("ADMIN".equalsIgnoreCase(addedByRole)) {
-                // Admin can add STAFF or CUSTOMER
-                if ("STAFF".equalsIgnoreCase(user.getRole()) || "CUSTOMER".equalsIgnoreCase(user.getRole())) {
-                    return userDAO.addUser(user);
-                } else {
-                    throw new ServiceException("Permission denied: Admin cannot add role '" + user.getRole() + "'");
-                }
-            } else if ("STAFF".equalsIgnoreCase(addedByRole)) {
-                // Staff can add CUSTOMER only
-                if ("CUSTOMER".equalsIgnoreCase(user.getRole())) {
-                    return userDAO.addUser(user);
-                } else {
-                    throw new ServiceException("Permission denied: Staff cannot add role '" + user.getRole() + "'");
-                }
-            } else {
-                throw new ServiceException("Permission denied: Unknown role " + addedByRole);
+            if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+                user.setPassword(PasswordUtils.hashPassword(user.getPassword()));
             }
+            return userDAO.addUser(user);
         } catch (DaoException e) {
             throw new ServiceException("Error while adding user", e);
+        } catch (Exception e) {
+            throw new ServiceException("Password hashing error", e);
         }
     }
 
-    /** Authenticate a user by username and password */
+    // Authenticate user
     public User authenticateUser(String username, String password) throws ServiceException {
         try {
-            return userDAO.getUserByUsernameAndPassword(username, password);
+            User user = userDAO.getUserByUsername(username);
+            if (user == null) {
+                throw new ServiceException("Invalid username or password");
+            }
+            if (!user.isActive()) {
+                throw new ServiceException("Account is inactive");
+            }
+            if (!PasswordUtils.verifyPassword(password, user.getPassword())) {
+                throw new ServiceException("Invalid username or password");
+            }
+            return user;
         } catch (DaoException e) {
             throw new ServiceException("Error during authentication", e);
+        } catch (Exception e) {
+            throw new ServiceException("Password verification error", e);
         }
     }
 
-    /** Get a user by username */
-    public User getUserByUsername(String username) throws ServiceException {
-        try {
-            return userDAO.getUserByUsername(username);
-        } catch (DaoException e) {
-            throw new ServiceException("Error retrieving user by username", e);
-        }
-    }
-
-    /** Enable or disable a user account */
+    // Enable/Disable users (Admin only)
     public boolean setUserActiveStatus(int userId, boolean isActive, String performedByRole) throws ServiceException {
         if (!"ADMIN".equalsIgnoreCase(performedByRole)) {
             throw new ServiceException("Permission denied: Only Admin can enable/disable users.");
@@ -79,7 +83,7 @@ public class UserService {
         }
     }
 
-    /** Reset a user's password */
+    // Reset password (Admin only)
     public boolean resetPassword(int userId, String newPassword, String performedByRole) throws ServiceException {
         if (!"ADMIN".equalsIgnoreCase(performedByRole)) {
             throw new ServiceException("Permission denied: Only Admin can reset passwords.");
@@ -88,19 +92,22 @@ public class UserService {
             throw new ServiceException("New password cannot be empty");
         }
         try {
-            return userDAO.updateUserPassword(userId, newPassword);
+            String hashed = PasswordUtils.hashPassword(newPassword);
+            return userDAO.updateUserPassword(userId, hashed);
         } catch (DaoException e) {
             throw new ServiceException("Error resetting user password", e);
+        } catch (Exception e) {
+            throw new ServiceException("Password hashing error", e);
         }
     }
 
-    /** View audit logs */
-    public void viewAuditLogs(String performedByRole) throws ServiceException {
+    // View audit logs (Admin only)
+    public List<String> viewAuditLogs(String performedByRole) throws ServiceException {
         if (!"ADMIN".equalsIgnoreCase(performedByRole)) {
             throw new ServiceException("Permission denied: Only Admin can view audit logs.");
         }
         try {
-            userDAO.getAuditLogs().forEach(System.out::println);
+            return userDAO.getAuditLogs();
         } catch (DaoException e) {
             throw new ServiceException("Error retrieving audit logs", e);
         }

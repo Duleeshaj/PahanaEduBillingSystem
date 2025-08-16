@@ -7,114 +7,117 @@ import com.pahana.edu.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class UserManagementTestApp {
+
+    private static final UserService userService = new UserService();
+    private static final Scanner scanner = new Scanner(System.in);
     private static final Logger log = LoggerFactory.getLogger(UserManagementTestApp.class);
 
     public static void main(String[] args) {
-        UserService userService = new UserService();
 
-        try (Scanner scanner = new Scanner(System.in)) {
+        System.out.println("=== User Management Test App ===");
 
-            // Admin adding Staff
-            System.out.println("Admin adding a Staff user:");
-            User staffUser = new User();
-            System.out.print("Enter Staff username: ");
-            staffUser.setUsername(scanner.nextLine());
-            System.out.print("Enter Staff password: ");
-            staffUser.setPassword(scanner.nextLine());
-            staffUser.setRole("STAFF");
-            staffUser.setActive(true);
+        while (true) {
+            System.out.println("\nChoose an action:");
+            System.out.println("1. Add User");
+            System.out.println("2. Enable/Disable User");
+            System.out.println("3. Reset User Password");
+            System.out.println("4. View Audit Logs");
+            System.out.println("5. Exit");
+            System.out.print("Option: ");
+            int option = Integer.parseInt(scanner.nextLine());
 
-            boolean staffAdded = userService.addUser(staffUser, "ADMIN");
-            if (staffAdded) {
-                log.info("✅ Staff user '{}' added successfully by Admin.", staffUser.getUsername());
-                User staffFromDb = userService.authenticateUser(staffUser.getUsername(), staffUser.getPassword());
-                if (staffFromDb != null) {
-                    staffUser.setUserId(staffFromDb.getUserId());
+            try {
+                switch (option) {
+                    case 1 -> addUserTest();
+                    case 2 -> toggleUserStatusTest();
+                    case 3 -> resetPasswordTest();
+                    case 4 -> viewAuditLogsTest();
+                    case 5 -> {
+                        System.out.println("Exiting...");
+                        return;
+                    }
+                    default -> System.out.println("Invalid option!");
                 }
-            } else {
-                log.warn("⚠ Failed to add Staff user '{}'.", staffUser.getUsername());
+            } catch (ServiceException e) {
+                log.error("Service Exception: {}", e.getMessage(), e);
+                System.out.println("Service Error: " + e.getMessage());
+            } catch (Exception e) {
+                log.error("Unexpected Error: {}", e.getMessage(), e);
+                System.out.println("Unexpected Error: " + e.getMessage());
             }
+        }
+    }
 
-            // Admin adding Customer
-            System.out.println("\nAdmin adding a Customer user:");
-            User customerUserByAdmin = new User();
-            System.out.print("Enter Customer username: ");
-            customerUserByAdmin.setUsername(scanner.nextLine());
-            // No password for customer
-            customerUserByAdmin.setPassword(null);
-            customerUserByAdmin.setRole("CUSTOMER");
-            customerUserByAdmin.setActive(true);
+    // ----------------- Test Methods -----------------
 
-            boolean customerAddedByAdmin = userService.addUser(customerUserByAdmin, "ADMIN");
-            if (customerAddedByAdmin) {
-                log.info("✅ Customer user '{}' added successfully by Admin.", customerUserByAdmin.getUsername());
-                User custFromDb = userService.getUserByUsername(customerUserByAdmin.getUsername());
-                if (custFromDb != null) {
-                    customerUserByAdmin.setUserId(custFromDb.getUserId());
-                }
-            } else {
-                log.warn("⚠ Failed to add Customer user '{}'.", customerUserByAdmin.getUsername());
-            }
+    private static void addUserTest() throws ServiceException {
+        System.out.println("\n--- Add User ---");
+        System.out.print("Enter your role (Admin/Staff): ");
+        String addedByRole = scanner.nextLine().trim();
 
-            // Staff adding Customer
-            System.out.println("\nStaff adding a Customer user:");
-            User customerUserByStaff = new User();
-            System.out.print("Enter Customer username: ");
-            customerUserByStaff.setUsername(scanner.nextLine());
-            customerUserByStaff.setPassword(null);
-            customerUserByStaff.setRole("CUSTOMER");
-            customerUserByStaff.setActive(true);
+        System.out.print("Enter new user's username: ");
+        String username = scanner.nextLine().trim();
 
-            boolean customerAddedByStaff = userService.addUser(customerUserByStaff, "STAFF");
-            if (customerAddedByStaff) {
-                log.info("✅ Customer user '{}' added successfully by Staff.", customerUserByStaff.getUsername());
-                User custFromDb = userService.getUserByUsername(customerUserByStaff.getUsername());
-                if (custFromDb != null) {
-                    customerUserByStaff.setUserId(custFromDb.getUserId());
-                }
-            } else {
-                log.warn("⚠ Failed to add Customer user '{}'.", customerUserByStaff.getUsername());
-            }
+        System.out.print("Enter password (leave blank for customer without password): ");
+        String password = scanner.nextLine().trim();
 
-            // Admin disables a Customer added by Staff
-            if (customerUserByStaff.getUserId() != 0) {
-                boolean disabledCust = userService.setUserActiveStatus(customerUserByStaff.getUserId(), false, "ADMIN");
-                if (disabledCust) {
-                    log.info("✅ Customer '{}' disabled by Admin.", customerUserByStaff.getUsername());
-                } else {
-                    log.warn("⚠ Failed to disable Customer '{}'.", customerUserByStaff.getUsername());
-                }
-            }
+        System.out.print("Enter role of new user (Staff/Customer): ");
+        String role = scanner.nextLine().trim();
 
-            // Admin disables a Staff user
-            if (staffUser.getUserId() != 0) {
-                boolean disabledStaff = userService.setUserActiveStatus(staffUser.getUserId(), false, "ADMIN");
-                if (disabledStaff) {
-                    log.info("✅ Staff '{}' disabled by Admin.", staffUser.getUsername());
-                } else {
-                    log.warn("⚠ Failed to disable Staff '{}'.", staffUser.getUsername());
-                }
-            }
+        User newUser = new User();
+        newUser.setUsername(username);
+        newUser.setPassword(password.isEmpty() ? null : password);
+        newUser.setRole(role);
 
-            // Admin resets Staff password
-            if (staffUser.getUserId() != 0) {
-                boolean resetPwd = userService.resetPassword(staffUser.getUserId(), "newStrongPassword123", "ADMIN");
-                if (resetPwd) {
-                    log.info("✅ Staff '{}' password reset by Admin.", staffUser.getUsername());
-                } else {
-                    log.warn("⚠ Failed to reset password for Staff '{}'.", staffUser.getUsername());
-                }
-            }
+        boolean success = userService.addUser(newUser, addedByRole);
+        System.out.println(success ? "User added successfully!" : "Failed to add user.");
+    }
 
-            // Admin views audit logs
-            log.info("\nAdmin viewing audit logs:");
-            userService.viewAuditLogs("ADMIN");
+    private static void toggleUserStatusTest() throws ServiceException {
+        System.out.println("\n--- Enable/Disable User ---");
+        System.out.print("Enter Admin role to proceed: ");
+        String performedByRole = scanner.nextLine().trim();
 
-        } catch (ServiceException e) {
-            log.error("❌ ServiceException: {}", e.getMessage(), e);
+        System.out.print("Enter user ID to update: ");
+        int userId = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Set Active? (true/false): ");
+        boolean isActive = Boolean.parseBoolean(scanner.nextLine());
+
+        boolean success = userService.setUserActiveStatus(userId, isActive, performedByRole);
+        System.out.println(success ? "User status updated successfully!" : "Failed to update user status.");
+    }
+
+    private static void resetPasswordTest() throws ServiceException {
+        System.out.println("\n--- Reset Password ---");
+        System.out.print("Enter Admin role to proceed: ");
+        String performedByRole = scanner.nextLine().trim();
+
+        System.out.print("Enter user ID to reset password: ");
+        int userId = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter new password: ");
+        String newPassword = scanner.nextLine().trim();
+
+        boolean success = userService.resetPassword(userId, newPassword, performedByRole);
+        System.out.println(success ? "Password reset successfully!" : "Failed to reset password.");
+    }
+
+    private static void viewAuditLogsTest() throws ServiceException {
+        System.out.println("\n--- Audit Logs ---");
+        System.out.print("Enter Admin role to proceed: ");
+        String performedByRole = scanner.nextLine().trim();
+
+        List<String> logs = userService.viewAuditLogs(performedByRole);
+        if (logs.isEmpty()) {
+            System.out.println("No audit logs found.");
+        } else {
+            System.out.println("Audit Logs:");
+            logs.forEach(System.out::println);
         }
     }
 }
