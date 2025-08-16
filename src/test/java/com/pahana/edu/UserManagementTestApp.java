@@ -1,9 +1,8 @@
 package com.pahana.edu;
 
+import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.User;
 import com.pahana.edu.service.UserService;
-import com.pahana.edu.exception.ServiceException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

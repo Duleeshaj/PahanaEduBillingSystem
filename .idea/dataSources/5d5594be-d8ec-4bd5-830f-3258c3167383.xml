@@ -1004,7 +1004,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Current>1</Current>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
-      <LastIntrospectionLocalTimestamp>2025-08-10.12:15:25</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-08-16.19:02:50</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </schema>
     <schema id="291" parent="1" name="performance_schema">
@@ -1301,7 +1301,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <Predicate>((`role` = _utf8mb4\&apos;customer\&apos;) and (`password` is null)) or ((`role` &lt;&gt; _utf8mb4\&apos;customer\&apos;) and (`password` is not null))</Predicate>
     </check>
     <column id="354" parent="307" name="user_id">
-      <AutoIncrement>3</AutoIncrement>
+      <AutoIncrement>9</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
