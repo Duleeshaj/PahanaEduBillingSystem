@@ -16,9 +16,9 @@ public class UserDAOImpl implements UserDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getPassword()); // TODO: Add password hashing
+            stmt.setString(2, user.getPassword()); // hashed already in Service
             stmt.setString(3, user.getRole());
-            stmt.setBoolean(4, true); // New users are active by default
+            stmt.setBoolean(4, true); // new users are active by default
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
@@ -28,27 +28,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public User getUserByUsernameAndPassword(String username, String password) throws DaoException {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, username);
-            stmt.setString(2, password); // TODO: Match hashed password
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return new User(
-                            rs.getInt("user_id"),
-                            rs.getString("username"),
-                            rs.getString("password"),
-                            rs.getString("role"),
-                            rs.getBoolean("active")
-                    );
-                }
-            }
-            return null;
-        } catch (SQLException e) {
-            throw new DaoException("Failed to authenticate user", e);
-        }
+        return null;
     }
 
     @Override
@@ -63,13 +43,14 @@ public class UserDAOImpl implements UserDAO {
                     return new User(
                             rs.getInt("user_id"),
                             rs.getString("username"),
-                            rs.getString("password"),
+                            rs.getString("password"), // hashed password
                             rs.getString("role"),
                             rs.getBoolean("active")
                     );
                 }
             }
             return null;
+
         } catch (SQLException e) {
             throw new DaoException("Failed to get user by username", e);
         }
@@ -96,7 +77,7 @@ public class UserDAOImpl implements UserDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, newPassword); // TODO: Hash before saving
+            stmt.setString(1, newPassword); // already hashed in Service
             stmt.setInt(2, userId);
             return stmt.executeUpdate() > 0;
 

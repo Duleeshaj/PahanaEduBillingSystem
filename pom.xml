@@ -31,14 +31,14 @@
             <version>8.0.33</version>
         </dependency>
 
-        <!-- JSTL (optional if using JSP later) -->
+        <!-- JSTL (For JSP) -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
 
-        <!-- Logging (optional but helpful) -->
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

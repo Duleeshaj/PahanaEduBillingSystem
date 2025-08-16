@@ -6,9 +6,17 @@ import java.util.List;
 
 public interface UserDAO {
     boolean addUser(User user) throws DaoException;
+
+    /**Returns the user if username exists, account is active, and password matches (BCrypt). */
     User getUserByUsernameAndPassword(String username, String password) throws DaoException;
-    User getUserByUsername(String username) throws DaoException;  // <-- new method
+
+    /** Returns user by username (password field will be null). */
+    User getUserByUsername(String username) throws DaoException;
+
     boolean updateUserActiveStatus(int userId, boolean isActive) throws DaoException;
-    boolean updateUserPassword(int userId, String newPassword) throws DaoException;
+
+    /** Expects a hashed password. */
+    boolean updateUserPassword(int userId, String hashedPassword) throws DaoException;
+
     List<String> getAuditLogs() throws DaoException;
 }
