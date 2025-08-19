@@ -2,7 +2,7 @@ package com.pahana.edu.util;
 
 import com.pahana.edu.model.Customer;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 public final class CustomerRequestMapper {
 

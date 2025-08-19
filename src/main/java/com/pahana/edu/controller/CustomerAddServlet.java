@@ -5,25 +5,24 @@ import com.pahana.edu.model.Customer;
 import com.pahana.edu.service.CustomerService;
 import com.pahana.edu.util.CustomerRequestMapper;
 
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 @WebServlet("/addCustomer")
 public class CustomerAddServlet extends HttpServlet {
 
-    private static final Logger log = LoggerFactory.getLogger(CustomerAddServlet.class);
+    private static final Logger log = Logger.getLogger(CustomerAddServlet.class.getName());
     private final CustomerService customerService = new CustomerService();
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // Optional but recommended for form posts
+        request.setCharacterEncoding("UTF-8");
+
         try {
             // Convert request data into Customer object
             Customer customer = CustomerRequestMapper.toCustomer(request);
@@ -32,18 +31,18 @@ public class CustomerAddServlet extends HttpServlet {
             boolean success = customerService.registerCustomer(customer);
 
             if (success) {
-                response.sendRedirect("success.jsp");
+                response.sendRedirect(request.getContextPath() + "/success.jsp");
             } else {
-                log.warn("Customer registration failed for accountNumber={}", customer.getAccountNumber());
-                response.sendRedirect("error.jsp");
+                log.warning("Customer registration failed for accountNumber=" + customer.getAccountNumber());
+                response.sendRedirect(request.getContextPath() + "/error.jsp");
             }
 
         } catch (IllegalArgumentException e) {
-            log.error("Bad request data when adding customer", e);
-            response.sendRedirect("error.jsp");
+            log.severe("Bad request data when adding customer: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
         } catch (ServiceException e) {
-            log.error("Service error while adding customer", e);
-            response.sendRedirect("error.jsp");
+            log.severe("Service error while adding customer: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
         }
     }
 }

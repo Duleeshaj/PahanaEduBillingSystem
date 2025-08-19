@@ -3,37 +3,53 @@ package com.pahana.edu.controller;
 import com.pahana.edu.model.Customer;
 import com.pahana.edu.service.CustomerService;
 
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import java.io.Serial;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/searchCustomer")
 public class CustomerSearchServlet extends HttpServlet {
 
-    private static final Logger log = LoggerFactory.getLogger(CustomerSearchServlet.class);
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(CustomerSearchServlet.class.getName());
     private final CustomerService customerService = new CustomerService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            int accountNumber = Integer.parseInt(request.getParameter("accountNumber"));
-            Customer customer = customerService.getCustomerByAccountNumber(accountNumber).orElse(null);
+            String param = request.getParameter("accountNumber");
+            int accountNumber = Integer.parseInt(param);
+
+            Customer customer = customerService
+                    .getCustomerByAccountNumber(accountNumber)
+                    .orElse(null);
 
             if (customer != null) {
                 request.setAttribute("customer", customer);
-                request.getRequestDispatcher("customerDetails.jsp").forward(request, response);
+                try {
+                    request.getRequestDispatcher("customerDetails.jsp").forward(request, response);
+                } catch (ServletException se) {
+                    log.log(Level.SEVERE, "Servlet exception while forwarding to customerDetails.jsp", se);
+                    response.sendRedirect("error.jsp");
+                }
             } else {
                 response.sendRedirect("notfound.jsp");
             }
+
         } catch (NumberFormatException e) {
-            log.warn("Invalid account number format", e);
+            log.log(Level.WARNING, "Invalid account number format", e);
             response.sendRedirect("error.jsp");
         } catch (Exception e) {
-            log.error("Error searching customer", e);
+            log.log(Level.SEVERE, "Error searching customer", e);
             response.sendRedirect("error.jsp");
         }
     }

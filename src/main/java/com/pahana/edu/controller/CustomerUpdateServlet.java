@@ -5,20 +5,23 @@ import com.pahana.edu.service.CustomerService;
 import com.pahana.edu.util.CustomerRequestMapper;
 import com.pahana.edu.exception.ServiceException;
 
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import java.io.Serial;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/updateCustomer")
 public class CustomerUpdateServlet extends HttpServlet {
 
-    private static final Logger log = LoggerFactory.getLogger(CustomerUpdateServlet.class);
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(CustomerUpdateServlet.class.getName());
     private final CustomerService customerService = new CustomerService();
 
     @Override
@@ -28,23 +31,23 @@ public class CustomerUpdateServlet extends HttpServlet {
             boolean success = customerService.updateCustomer(customer);
 
             if (success) {
-                log.info("Successfully updated customer with accountNumber={}", customer.getAccountNumber());
+                log.info("Successfully updated customer with accountNumber=" + customer.getAccountNumber());
                 response.sendRedirect("success.jsp");
             } else {
-                log.warn("Failed to update customer with accountNumber={}", customer.getAccountNumber());
+                log.warning("Failed to update customer with accountNumber=" + customer.getAccountNumber());
                 response.sendRedirect("error.jsp");
             }
 
         } catch (IllegalArgumentException e) {
-            log.error("Invalid input when updating customer", e);
+            log.log(Level.WARNING, "Invalid input when updating customer", e);
             response.sendRedirect("error.jsp");
 
         } catch (ServiceException e) {
-            log.error("Service layer error while updating customer", e);
+            log.log(Level.SEVERE, "Service layer error while updating customer", e);
             response.sendRedirect("error.jsp");
 
         } catch (Exception e) {
-            log.error("Unexpected error during customer update", e);
+            log.log(Level.SEVERE, "Unexpected error during customer update", e);
             response.sendRedirect("error.jsp");
         }
     }

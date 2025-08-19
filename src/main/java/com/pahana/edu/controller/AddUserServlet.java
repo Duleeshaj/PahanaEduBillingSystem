@@ -4,9 +4,9 @@ import com.pahana.edu.model.User;
 import com.pahana.edu.service.UserService;
 import com.pahana.edu.exception.ServiceException;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
 import java.io.IOException;
 
 @WebServlet("/addUser")
