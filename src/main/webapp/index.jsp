@@ -1,27 +1,34 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ include file="/_header.jsp" %>
-<div class="container" style="padding-top:20px;">
-    <div class="grid">
-        <div class="card">
-            <h3>Welcome to Pahana Edu Billing</h3>
-            <p class="muted">Manage customers, items, and bills with a fast, web-based system.</p>
-            <div class="actions">
-                <a class="btn primary" href="login.jsp">Login to Continue</a>
-            </div>
+<%
+    String ctx = request.getContextPath();
+    Object u = session.getAttribute("user");
+    boolean loggedIn = (u != null);
+%>
+
+<!-- Topbar -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111827;color:#fff;">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em;">
+        <div style="width:28px;height:28px;border-radius:8px;background:#3b82f6;display:inline-flex;align-items:center;justify-content:center;font-weight:800;">
+            P
         </div>
-        <div class="card">
-            <h3>Key Features</h3>
-            <ul class="muted">
-                <li>Secure Login (Admin & Staff)</li>
-                <li>Customers & Items management</li>
-                <li>Units-based billing & printing</li>
-                <li>Help & Audit</li>
-            </ul>
-        </div>
-        <div class="card">
-            <h3>Quick Tips</h3>
-            <p class="muted">Use Customers to register accounts and Billing to compute/print bills.</p>
-        </div>
+        <div>Pahana Edu</div>
+    </div>
+
+    <div>
+        <a href="<%= ctx %>/home"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#1f2937;color:#e5e7eb;display:inline-block;">Home</a>
+
+        <a href="<%= ctx %>/help.jsp"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#1f2937;color:#e5e7eb;display:inline-block;">Help</a>
+
+        <% if (!loggedIn) { %>
+        <a href="<%= ctx %>/login.jsp"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#3b82f6;color:#fff;display:inline-block;">Login</a>
+        <% } else { %>
+        <a href="<%= ctx %>/logout"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#3b82f6;color:#fff;display:inline-block;">Logout</a>
+        <% } %>
     </div>
 </div>
+
 <%@ include file="/_footer.jsp" %>
