@@ -1204,6 +1204,7 @@
       <StoredType>decimal(10,2 digit)|0s</StoredType>
     </column>
     <column id="351" parent="306" name="stock">
+      <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StoredType>int|0s</StoredType>
@@ -1213,66 +1214,70 @@
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="353" parent="306" name="PRIMARY">
+    <index id="353" parent="306" name="idx_items_name">
+      <ColNames>name</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="354" parent="306" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <check id="354" parent="307" name="chk_password_required_for_roles">
+    <check id="355" parent="307" name="chk_password_required_for_roles">
       <Predicate>((`role` = _utf8mb4\&apos;customer\&apos;) and (`password` is null)) or ((`role` &lt;&gt; _utf8mb4\&apos;customer\&apos;) and (`password` is not null))</Predicate>
     </check>
-    <column id="355" parent="307" name="user_id">
+    <column id="356" parent="307" name="user_id">
       <AutoIncrement>10</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <column id="356" parent="307" name="username">
+    <column id="357" parent="307" name="username">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>varchar(50)|0s</StoredType>
     </column>
-    <column id="357" parent="307" name="password">
+    <column id="358" parent="307" name="password">
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="358" parent="307" name="role">
+    <column id="359" parent="307" name="role">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>varchar(20)|0s</StoredType>
     </column>
-    <column id="359" parent="307" name="active">
+    <column id="360" parent="307" name="active">
       <DefaultExpression>1</DefaultExpression>
       <Position>5</Position>
       <StoredType>tinyint(1)|0s</StoredType>
     </column>
-    <index id="360" parent="307" name="PRIMARY">
+    <index id="361" parent="307" name="PRIMARY">
       <ColNames>user_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="361" parent="307" name="username">
+    <index id="362" parent="307" name="username">
       <ColNames>username</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="362" parent="307" name="username_2">
+    <index id="363" parent="307" name="username_2">
       <ColNames>username</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="363" parent="307" name="PRIMARY">
+    <key id="364" parent="307" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <key id="364" parent="307" name="username">
+    <key id="365" parent="307" name="username">
       <UnderlyingIndexName>username</UnderlyingIndexName>
     </key>
-    <key id="365" parent="307" name="username_2">
+    <key id="366" parent="307" name="username_2">
       <UnderlyingIndexName>username_2</UnderlyingIndexName>
     </key>
-    <trigger id="366" parent="307" name="enforce_password_rule_update">
+    <trigger id="367" parent="307" name="enforce_password_rule_update">
       <Definer>root@localhost</Definer>
       <Events>U</Events>
       <SourceTextLength>191</SourceTextLength>
