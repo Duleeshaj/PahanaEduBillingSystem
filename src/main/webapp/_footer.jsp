@@ -1,0 +1,1 @@
+<div class="footer">© <%= java.time.Year.now() %> Pahana Edu • Colombo</div>

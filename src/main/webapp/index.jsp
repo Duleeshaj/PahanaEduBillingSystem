@@ -1,100 +1,27 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Pahana Edu Billing System</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #004080, #0066cc);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            text-align: center;
-            padding: 20px;
-            color: white;
-        }
-        header h1 {
-            font-size: 32px;
-            margin: 0;
-            letter-spacing: 1px;
-        }
-        .container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-        }
-        .card {
-            background-color: white;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        .card h2 {
-            margin-bottom: 15px;
-            color: #004080;
-        }
-        .card p {
-            color: #555;
-            font-size: 16px;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-        .btn {
-            background-color: #004080;
-            color: white;
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn:hover {
-            background-color: #0066cc;
-        }
-        footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #003060;
-            color: white;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Pahana Edu Billing System</h1>
-</header>
-
-<div class="container">
-    <div class="card">
-        <h2>Welcome!</h2>
-        <p>
-            Manage customer accounts, items, and billing seamlessly in one place.
-            Secure, efficient, and tailored for Pahana Edu Bookshop's needs.
-        </p>
-        <a href="login.jsp" class="btn">Login to Continue</a>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ include file="/_header.jsp" %>
+<div class="container" style="padding-top:20px;">
+    <div class="grid">
+        <div class="card">
+            <h3>Welcome to Pahana Edu Billing</h3>
+            <p class="muted">Manage customers, items, and bills with a fast, web-based system.</p>
+            <div class="actions">
+                <a class="btn primary" href="login.jsp">Login to Continue</a>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Key Features</h3>
+            <ul class="muted">
+                <li>Secure Login (Admin & Staff)</li>
+                <li>Customers & Items management</li>
+                <li>Units-based billing & printing</li>
+                <li>Help & Audit</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Quick Tips</h3>
+            <p class="muted">Use Customers to register accounts and Billing to compute/print bills.</p>
+        </div>
     </div>
 </div>
-
-<footer>
-    &copy; <%= java.time.Year.now() %> Pahana Edu Bookshop. All Rights Reserved.
-</footer>
-
-</body>
-</html>
+<%@ include file="/_footer.jsp" %>
