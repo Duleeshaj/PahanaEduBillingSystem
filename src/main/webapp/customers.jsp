@@ -2,15 +2,12 @@
 <%@ page import="java.util.List" %>
 <%@ page import="com.pahana.edu.model.Customer" %>
 <%@ include file="/_header.jsp" %>
-<%
-    final String ctx = request.getContextPath();
-%>
 
 <div style="max-width:1080px;margin:16px auto 32px auto;padding:0 16px;">
     <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04);">
         <h3 style="margin:0 0 12px 0;font-size:1.1rem;">Customers</h3>
 
-        <form method="get" action="<%= ctx %>/customers"
+        <form method="get" action="<%= request.getContextPath() %>/customers"
               style="display:flex;gap:8px;margin:12px 0;align-items:center;flex-wrap:wrap;">
             <label for="q" style="min-width:60px;">Search</label>
             <input id="q" name="q"
@@ -21,8 +18,8 @@
                     style="padding:10px 14px;border-radius:10px;border:1px solid transparent;background:#111827;color:#fff;cursor:pointer;">
                 Search
             </button>
-            <a href="<%= ctx %>/customers/add"
-               style="padding:10px 14px;border-radius:10px;border:1px solid transparent;background:#3b82f6;color:#fff;display:inline-block;">
+            <a href="<%= request.getContextPath() %>/customers/add"
+               style="padding:10px 14px;border-radius:10px;border:1px solid transparent;background:#3b82f6;color:#fff;display:inline-block;text-decoration:none;">
                 Add Customer
             </a>
         </form>
@@ -57,7 +54,7 @@
                     <th style="padding:10px;">Account #</th>
                     <th style="padding:10px;">Name</th>
                     <th style="padding:10px;">Telephone</th>
-                    <th style="padding:10px;">Units</th>
+                    <th style="padding:10px;">Email</th>
                     <th style="padding:10px;">Actions</th>
                 </tr>
                 </thead>
@@ -70,18 +67,14 @@
                     <td style="padding:10px;"><%= c.getAccountNumber() %></td>
                     <td style="padding:10px;"><%= c.getName() %></td>
                     <td style="padding:10px;"><%= c.getTelephone() %></td>
-                    <td style="padding:10px;"><%= c.getUnitsConsumed() %></td>
+                    <td style="padding:10px;"><%= c.getEmail() %></td>
                     <td style="padding:10px;">
                         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                            <a href="<%= ctx %>/customers/view?accountNumber=<%= c.getAccountNumber() %>"
-                               style="padding:8px 12px;border-radius:10px;background:#111827;color:#fff;display:inline-block;">
-                                View
-                            </a>
-                            <a href="<%= ctx %>/customers/edit?accountNumber=<%= c.getAccountNumber() %>"
-                               style="padding:8px 12px;border-radius:10px;background:#111827;color:#fff;display:inline-block;">
-                                Edit
-                            </a>
-                            <form method="post" action="<%= ctx %>/customers/delete"
+                            <a href="<%= request.getContextPath() %>/customers/view?accountNumber=<%= c.getAccountNumber() %>"
+                               style="padding:8px 12px;border-radius:10px;background:#111827;color:#fff;display:inline-block;text-decoration:none;">View</a>
+                            <a href="<%= request.getContextPath() %>/customers/edit?accountNumber=<%= c.getAccountNumber() %>"
+                               style="padding:8px 12px;border-radius:10px;background:#111827;color:#fff;display:inline-block;text-decoration:none;">Edit</a>
+                            <form method="post" action="<%= request.getContextPath() %>/customers/delete"
                                   onsubmit="return confirm('Delete this customer?');" style="display:inline;">
                                 <input type="hidden" name="accountNumber" value="<%= c.getAccountNumber() %>">
                                 <button type="submit"

@@ -7,18 +7,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * JDBC implementation. Uses stored procedures where available:
- *  - sp_addCustomer(p_account_number, p_name, p_address, p_telephone, p_units)
- *  - sp_getCustomerByAccountNumber(p_account_number)
- *  - sp_updateCustomer(p_account_number, p_name, p_address, p_telephone, p_units)
- *  - sp_deleteCustomer(p_account_number)
- *  - sp_getAllCustomers()
- *
- * For name search we use a simple SELECT with LIKE (no extra SP required).
- *
- * Assumes a DatabaseConnection class exists that returns a java.sql.Connection.
- */
 public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
@@ -26,16 +14,13 @@ public class CustomerDAOImpl implements CustomerDAO {
         final String sql = "{ CALL sp_addCustomer(?, ?, ?, ?, ?) }";
         try (Connection con = DatabaseConnection.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
-
             cs.setInt(1, c.getAccountNumber());
             cs.setString(2, c.getName());
             cs.setString(3, c.getAddress());
             cs.setString(4, c.getTelephone());
-            cs.setInt(5, c.getUnitsConsumed());
-
+            cs.setString(5, c.getEmail());
             cs.execute();
-            return true; // SP will SIGNAL on duplicate; otherwise success
-
+            return true;
         } catch (SQLException e) {
             throw wrap("addCustomer failed", e);
         }
@@ -46,15 +31,11 @@ public class CustomerDAOImpl implements CustomerDAO {
         final String sql = "{ CALL sp_getCustomerByAccountNumber(?) }";
         try (Connection con = DatabaseConnection.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
-
             cs.setInt(1, accountNumber);
             try (ResultSet rs = cs.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
-                }
+                if (rs.next()) return mapRow(rs);
                 return null;
             }
-
         } catch (SQLException e) {
             throw wrap("getCustomerByAccountNumber failed", e);
         }
@@ -65,17 +46,13 @@ public class CustomerDAOImpl implements CustomerDAO {
         final String sql = "{ CALL sp_updateCustomer(?, ?, ?, ?, ?) }";
         try (Connection con = DatabaseConnection.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
-
             cs.setInt(1, c.getAccountNumber());
             cs.setString(2, c.getName());
             cs.setString(3, c.getAddress());
             cs.setString(4, c.getTelephone());
-            cs.setInt(5, c.getUnitsConsumed());
-
+            cs.setString(5, c.getEmail());
             cs.execute();
-            // If no row affected, the SP raises SQLSTATE '02000' → SQLException
             return true;
-
         } catch (SQLException e) {
             throw wrap("updateCustomer failed", e);
         }
@@ -86,11 +63,9 @@ public class CustomerDAOImpl implements CustomerDAO {
         final String sql = "{ CALL sp_deleteCustomer(?) }";
         try (Connection con = DatabaseConnection.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
-
             cs.setInt(1, accountNumber);
             cs.execute();
             return true;
-
         } catch (SQLException e) {
             throw wrap("deleteCustomer failed", e);
         }
@@ -103,10 +78,8 @@ public class CustomerDAOImpl implements CustomerDAO {
         try (Connection con = DatabaseConnection.getConnection();
              CallableStatement cs = con.prepareCall(sql);
              ResultSet rs = cs.executeQuery()) {
-
             while (rs.next()) out.add(mapRow(rs));
             return out;
-
         } catch (SQLException e) {
             throw wrap("getAllCustomers failed", e);
         }
@@ -114,25 +87,33 @@ public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
     public List<Customer> searchCustomersByName(String namePart) throws DaoException {
-        // Simple LIKE-based search (case-insensitive if collation permits)
-        final String sql = "SELECT account_number, name, address, telephone, units_consumed " +
-                "FROM customers WHERE name LIKE ? ORDER BY name ASC";
+        final String sql =
+                "SELECT account_number, name, address, telephone, email " +
+                        "FROM customers WHERE name LIKE ? ORDER BY name ASC";
         final List<Customer> out = new ArrayList<>();
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, "%" + namePart + "%");
+            ps.setString(1, "%" + (namePart == null ? "" : namePart) + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) out.add(mapRow(rs));
             }
             return out;
-
         } catch (SQLException e) {
             throw wrap("searchCustomersByName failed", e);
         }
     }
 
-    // --- helpers ---
+    @Override
+    public boolean doesCustomerExist(int accountNumber) {
+        final String sql = "SELECT 1 FROM customers WHERE account_number = ? LIMIT 1";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, accountNumber);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+        } catch (SQLException e) {
+            throw new RuntimeException("doesCustomerExist failed: " + e.getMessage(), e);
+        }
+    }
 
     private static Customer mapRow(ResultSet rs) throws SQLException {
         Customer c = new Customer();
@@ -140,7 +121,7 @@ public class CustomerDAOImpl implements CustomerDAO {
         c.setName(rs.getString("name"));
         c.setAddress(rs.getString("address"));
         c.setTelephone(rs.getString("telephone"));
-        c.setUnitsConsumed(rs.getInt("units_consumed"));
+        c.setEmail(rs.getString("email"));
         return c;
     }
 

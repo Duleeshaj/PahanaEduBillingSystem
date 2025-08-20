@@ -2,15 +2,16 @@ package com.pahana.edu.model;
 
 import java.time.LocalDateTime;
 
+/** Billing domain model mapped to table `bills`. */
 public class Bill {
     private int billId;
     private int accountNumber;
     private int unitsConsumed;
     private double unitRate;
     private double totalAmount;
-    private LocalDateTime billDate;
+    /** maps to DB column `created_at` */
+    private LocalDateTime createdAt;
 
-    // Getters & Setters
     public int getBillId() { return billId; }
     public void setBillId(int billId) { this.billId = billId; }
 
@@ -26,6 +27,6 @@ public class Bill {
     public double getTotalAmount() { return totalAmount; }
     public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
 
-    public LocalDateTime getBillDate() { return billDate; }
-    public void setBillDate(LocalDateTime billDate) { this.billDate = billDate; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

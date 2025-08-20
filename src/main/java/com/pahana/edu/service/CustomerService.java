@@ -20,7 +20,6 @@ public class CustomerService {
     public boolean addCustomer(Customer customer) throws ServiceException {
         try {
             validateCustomerForCreateOrUpdate(customer);
-            // Account number uniqueness is enforced in SP (signals) or DAO
             return customerDAO.addCustomer(customer);
         } catch (DaoException e) {
             throw new ServiceException("Error while adding customer", e);
@@ -66,12 +65,10 @@ public class CustomerService {
         }
     }
 
-    /** Name-contains search; returns empty list if none. */
+    /** Name-contains search; returns all if query blank. */
     public List<Customer> searchCustomersByName(String namePart) throws ServiceException {
         try {
-            if (namePart == null || namePart.trim().isEmpty()) {
-                return getAllCustomers();
-            }
+            if (isBlank(namePart)) return getAllCustomers();
             return customerDAO.searchCustomersByName(namePart.trim());
         } catch (DaoException e) {
             throw new ServiceException("Error while searching customers", e);
@@ -83,14 +80,26 @@ public class CustomerService {
     private static void validateCustomerForCreateOrUpdate(Customer c) throws ServiceException {
         if (c == null) throw new ServiceException("Customer cannot be null");
         if (c.getAccountNumber() <= 0) throw new ServiceException("Invalid account number");
+
         if (isBlank(c.getName())) throw new ServiceException("Name is required");
         if (isBlank(c.getAddress())) throw new ServiceException("Address is required");
+
         if (isBlank(c.getTelephone())) throw new ServiceException("Telephone is required");
         if (!c.getTelephone().matches("^[0-9+\\-() ]{7,20}$")) {
             throw new ServiceException("Telephone format is invalid");
         }
-        if (c.getUnitsConsumed() < 0) throw new ServiceException("Units must be non-negative");
+
+        if (isBlank(c.getEmail())) throw new ServiceException("Email is required");
+        // Simple email format check; keeps things dependency-free.
+        if (!c.getEmail().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new ServiceException("Email format is invalid");
+        }
+        if (c.getEmail().length() > 120) {
+            throw new ServiceException("Email is too long");
+        }
     }
 
-    private static boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
 }

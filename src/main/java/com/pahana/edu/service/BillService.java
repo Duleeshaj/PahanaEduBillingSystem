@@ -9,12 +9,15 @@ import com.pahana.edu.dao.CustomerDAOImpl;
 import com.pahana.edu.exception.DaoException;
 import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.Bill;
-import com.pahana.edu.model.Customer;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
+/**
+ * Business logic for Billing.
+ * - Validates inputs and preconditions
+ * - Fetches pricing configuration (unit rate)
+ * - Delegates persistence to DAO (which uses stored procedures)
+ */
 public class BillService {
 
     private final BillDAO billDAO;
@@ -27,38 +30,47 @@ public class BillService {
         this.configDAO = new ConfigDAOImpl();
     }
 
+    /**
+     * Generate a bill for a given customer and units.
+     * Steps:
+     *  1) Validate numbers
+     *  2) Ensure customer exists
+     *  3) Load current unit rate from config
+     *  4) Compute total = units * rate
+     *  5) Persist via DAO (SP: sp_addBill)
+     */
     public boolean generateBill(int accountNumber, int unitsConsumed) throws ServiceException {
+        if (accountNumber <= 0) {
+            throw new ServiceException("Invalid account number");
+        }
         if (unitsConsumed < 0) {
-            throw new ServiceException("Units consumed cannot be negative.");
+            throw new ServiceException("Units cannot be negative");
         }
 
         try {
-            // ✅ Existence check via lookup
-            Customer customer = customerDAO.getCustomerByAccountNumber(accountNumber);
-            if (customer == null) {
-                throw new ServiceException("Cannot generate bill: Customer with account number "
-                        + accountNumber + " does not exist.");
+            // Ensure customer exists
+            boolean exists = customerDAO.doesCustomerExist(accountNumber);
+            if (!exists) {
+                throw new ServiceException("Customer " + accountNumber + " does not exist.");
             }
 
-            // ✅ Fetch unit rate from config
-            double rate;
-            try {
-                rate = configDAO.getUnitRate();
-            } catch (DaoException e) {
-                throw new ServiceException("Failed to retrieve unit rate from configuration", e);
+            // Get current unit rate from configuration
+            double unitRate = configDAO.getUnitRate();
+            if (unitRate < 0) {
+                throw new ServiceException("Invalid unit rate in configuration");
             }
 
-            // Use BigDecimal for currency math (no extra deps)
-            BigDecimal bdRate  = BigDecimal.valueOf(rate);
-            BigDecimal bdUnits = BigDecimal.valueOf(unitsConsumed);
-            BigDecimal total   = bdUnits.multiply(bdRate).setScale(2, RoundingMode.HALF_UP);
+            // Compute total
+            double total = unitsConsumed * unitRate;
 
+            // Build Bill model
             Bill bill = new Bill();
             bill.setAccountNumber(accountNumber);
             bill.setUnitsConsumed(unitsConsumed);
-            bill.setUnitRate(bdRate.doubleValue());
-            bill.setTotalAmount(total.doubleValue());
+            bill.setUnitRate(unitRate);
+            bill.setTotalAmount(total);
 
+            // Persist via DAO (stored procedure)
             return billDAO.addBill(bill);
 
         } catch (DaoException e) {
@@ -66,11 +78,36 @@ public class BillService {
         }
     }
 
+    /** Get all bills for a customer (SP: sp_getBillsByCustomer). */
     public List<Bill> getBillsByCustomer(int accountNumber) throws ServiceException {
+        if (accountNumber <= 0) {
+            throw new ServiceException("Invalid account number");
+        }
         try {
             return billDAO.getBillsByCustomer(accountNumber);
         } catch (DaoException e) {
-            throw new ServiceException("Error while retrieving bills", e);
+            throw new ServiceException("Error while retrieving bills for customer " + accountNumber, e);
+        }
+    }
+
+    /** Get a single bill by its ID (SP: sp_getBillById). */
+    public Bill getBillById(int billId) throws ServiceException {
+        if (billId <= 0) {
+            throw new ServiceException("Invalid bill id");
+        }
+        try {
+            return billDAO.getBillById(billId);
+        } catch (DaoException e) {
+            throw new ServiceException("Error while retrieving bill " + billId, e);
+        }
+    }
+
+    /** Get all bills (SP: sp_getAllBills). Useful for admin history screen. */
+    public List<Bill> getAllBills() throws ServiceException {
+        try {
+            return billDAO.getAllBills();
+        } catch (DaoException e) {
+            throw new ServiceException("Error while retrieving all bills", e);
         }
     }
 }

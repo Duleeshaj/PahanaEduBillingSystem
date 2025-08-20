@@ -18,4 +18,6 @@ public interface CustomerDAO {
     List<Customer> getAllCustomers() throws DaoException;
 
     List<Customer> searchCustomersByName(String namePart) throws DaoException;
+
+    boolean doesCustomerExist(int accountNumber);
 }

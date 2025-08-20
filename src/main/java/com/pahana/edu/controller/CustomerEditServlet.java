@@ -8,72 +8,59 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-@WebServlet("/customers/edit")
+@WebServlet(name="CustomerEditServlet", urlPatterns={"/customers/edit"})
 public class CustomerEditServlet extends HttpServlet {
-    private static final Logger log = Logger.getLogger(CustomerEditServlet.class.getName());
     private final CustomerService service = new CustomerService();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String sAcc = req.getParameter("accountNumber");
-        if (sAcc == null) { resp.sendRedirect(req.getContextPath() + "/customers"); return; }
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String accStr = req.getParameter("accountNumber");
+        if (accStr == null) { resp.sendRedirect(req.getContextPath()+"/customers?err=invalid"); return; }
         try {
-            int account = Integer.parseInt(sAcc);
-            Customer c = service.getCustomerByAccountNumber(account);
-            if (c == null) { resp.sendRedirect(req.getContextPath() + "/customers?err=notfound"); return; }
+            int accountNumber = Integer.parseInt(accStr.trim());
+            Customer c = service.getCustomerByAccountNumber(accountNumber);
+            if (c == null) {
+                resp.sendRedirect(req.getContextPath()+"/customers?err=notfound");
+                return;
+            }
             req.setAttribute("customer", c);
             req.getRequestDispatcher("/customer-edit.jsp").forward(req, resp);
-        } catch (NumberFormatException | ServiceException | ServletException e) {
-            log.log(Level.WARNING, "Edit load failed", e);
-            resp.sendRedirect(req.getContextPath() + "/customers?err=invalid");
+        } catch (NumberFormatException | ServiceException e) {
+            resp.sendRedirect(req.getContextPath()+"/customers?err=invalid");
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String sAcc = req.getParameter("accountNumber");
-        String name = trim(req.getParameter("name"));
-        String address = trim(req.getParameter("address"));
-        String tel = trim(req.getParameter("telephone"));
-        String sUnits = trim(req.getParameter("unitsConsumed"));
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        String accStr = req.getParameter("accountNumber");
+        String name = req.getParameter("name");
+        String address = req.getParameter("address");
+        String telephone = req.getParameter("telephone");
+        String email = req.getParameter("email");
 
-        if (isBlank(sAcc) || isBlank(name) || isBlank(address) || isBlank(tel) || isBlank(sUnits)) {
+        if (isBlank(accStr) || isBlank(name) || isBlank(address) || isBlank(telephone) || isBlank(email)) {
             req.setAttribute("error", "All fields are required.");
-            forwardBack(req, resp, "/customer-edit.jsp");
-            return;
-        }
-        int account, units;
-        try {
-            account = Integer.parseInt(sAcc);
-            units = Integer.parseInt(sUnits);
-            if (units < 0) throw new NumberFormatException("Negative units");
-        } catch (NumberFormatException ex) {
-            req.setAttribute("error", "Account number and units must be valid non-negative integers.");
-            forwardBack(req, resp, "/customer-edit.jsp");
-            return;
-        }
-        if (!tel.matches("^[0-9+\\-() ]{7,20}$")) {
-            req.setAttribute("error", "Telephone format is invalid.");
-            forwardBack(req, resp, "/customer-edit.jsp");
+            req.getRequestDispatcher("/customer-edit.jsp").forward(req, resp);
             return;
         }
 
-        Customer c = new Customer(account, name, address, tel, units);
         try {
+            int accountNumber = Integer.parseInt(accStr.trim());
+            Customer c = new Customer(accountNumber, name.trim(), address.trim(), telephone.trim(), email.trim());
             boolean ok = service.updateCustomer(c);
             if (ok) {
-                resp.sendRedirect(req.getContextPath() + "/customers?msg=updated");
+                resp.sendRedirect(req.getContextPath()+"/customers?msg=updated");
             } else {
                 req.setAttribute("error", "Update failed.");
-                forwardBack(req, resp, "/customer-edit.jsp");
+                req.getRequestDispatcher("/customer-edit.jsp").forward(req, resp);
             }
-        } catch (ServiceException e) {
-            log.log(Level.SEVERE, "Update customer failed", e);
-            req.setAttribute("error", "Internal error. Try again later.");
-            forwardBack(req, resp, "/customer-edit.jsp");
+        } catch (NumberFormatException nfe) {
+            req.setAttribute("error", "Account number must be a number.");
+            req.getRequestDispatcher("/customer-edit.jsp").forward(req, resp);
+        } catch (ServiceException se) {
+            req.setAttribute("error", se.getMessage());
+            req.getRequestDispatcher("/customer-edit.jsp").forward(req, resp);
         }
     }
 

@@ -8,66 +8,46 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-@WebServlet("/customers/add")
+@WebServlet(name="CustomerAddServlet", urlPatterns={"/customers/add"})
 public class CustomerAddServlet extends HttpServlet {
-    private static final Logger log = Logger.getLogger(CustomerAddServlet.class.getName());
     private final CustomerService service = new CustomerService();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try {
-            req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
-        } catch (ServletException e) {
-            resp.sendRedirect(req.getContextPath() + "/error.jsp");
-        }
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String sAcc = trim(req.getParameter("accountNumber"));
-        String name = trim(req.getParameter("name"));
-        String address = trim(req.getParameter("address"));
-        String tel = trim(req.getParameter("telephone"));
-        String sUnits = trim(req.getParameter("unitsConsumed"));
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        String accStr = req.getParameter("accountNumber");
+        String name = req.getParameter("name");
+        String address = req.getParameter("address");
+        String telephone = req.getParameter("telephone");
+        String email = req.getParameter("email");
 
-        // Basic validations (server-side)
-        if (isBlank(sAcc) || isBlank(name) || isBlank(address) || isBlank(tel) || isBlank(sUnits)) {
+        if (isBlank(accStr) || isBlank(name) || isBlank(address) || isBlank(telephone) || isBlank(email)) {
             req.setAttribute("error", "All fields are required.");
-            forwardBack(req, resp, "/customer-add.jsp");
-            return;
-        }
-        int account, units;
-        try {
-            account = Integer.parseInt(sAcc);
-            units = Integer.parseInt(sUnits);
-            if (units < 0) throw new NumberFormatException("Negative units");
-        } catch (NumberFormatException ex) {
-            req.setAttribute("error", "Account number and units must be valid non-negative integers.");
-            forwardBack(req, resp, "/customer-add.jsp");
-            return;
-        }
-        if (!tel.matches("^[0-9+\\-() ]{7,20}$")) {
-            req.setAttribute("error", "Telephone format is invalid.");
-            forwardBack(req, resp, "/customer-add.jsp");
+            req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
             return;
         }
 
-        Customer c = new Customer(account, name, address, tel, units);
         try {
+            int accountNumber = Integer.parseInt(accStr.trim());
+            Customer c = new Customer(accountNumber, name.trim(), address.trim(), telephone.trim(), email.trim());
             boolean ok = service.addCustomer(c);
             if (ok) {
                 resp.sendRedirect(req.getContextPath() + "/customers?msg=added");
             } else {
-                req.setAttribute("error", "Could not add customer (maybe duplicate account number).");
-                forwardBack(req, resp, "/customer-add.jsp");
+                req.setAttribute("error", "Failed to add customer.");
+                req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
             }
-        } catch (ServiceException e) {
-            log.log(Level.SEVERE, "Add customer failed", e);
-            req.setAttribute("error", "Internal error. Try again later.");
-            forwardBack(req, resp, "/customer-add.jsp");
+        } catch (NumberFormatException nfe) {
+            req.setAttribute("error", "Account number must be a number.");
+            req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
+        } catch (ServiceException se) {
+            req.setAttribute("error", se.getMessage());
+            req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
         }
     }
 
