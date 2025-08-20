@@ -52,6 +52,10 @@ public class UserService {
 
     // Authenticate user
     public User authenticateUser(String username, String password) throws ServiceException {
+        if (username == null || username.trim().isEmpty() ||
+                password == null || password.trim().isEmpty()) {
+            throw new ServiceException("Invalid username or password");
+        }
         try {
             User user = userDAO.getUserByUsername(username);
             if (user == null) {
@@ -60,14 +64,14 @@ public class UserService {
             if (!user.isActive()) {
                 throw new ServiceException("Account is inactive");
             }
-            if (!PasswordUtils.verifyPassword(password, user.getPassword())) {
+            // storedHash is expected to be HEX (any case). PasswordUtils takes care of case.
+            String storedHash = user.getPassword();
+            if (!PasswordUtils.verifyPassword(password, storedHash)) {
                 throw new ServiceException("Invalid username or password");
             }
             return user;
         } catch (DaoException e) {
             throw new ServiceException("Error during authentication", e);
-        } catch (Exception e) {
-            throw new ServiceException("Password verification error", e);
         }
     }
 

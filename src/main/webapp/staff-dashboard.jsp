@@ -9,9 +9,9 @@
     <div class="sidebar">
         <h4>Staff</h4>
         <a class="active" href="staff-dashboard.jsp">Overview</a>
-        <a href="customers.jsp">Customers</a>
-        <a href="billing.jsp">Billing</a>
-        <a href="bills.jsp">Bills</a>
+        <a href="customers.jsp">Customer Management</a>
+        <a href="billing.jsp">Create Bill</a>
+        <a href="bills.jsp">Bill History</a>
         <a href="help.jsp">Help</a>
     </div>
     <div class="main">

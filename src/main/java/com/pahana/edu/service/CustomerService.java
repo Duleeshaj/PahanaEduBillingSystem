@@ -7,7 +7,6 @@ import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.Customer;
 
 import java.util.List;
-import java.util.Optional;
 
 public class CustomerService {
 
@@ -17,47 +16,48 @@ public class CustomerService {
         this.customerDAO = new CustomerDAOImpl();
     }
 
-    public boolean registerCustomer(Customer customer) throws ServiceException {
+    /** Create a new customer (validates required fields). */
+    public boolean addCustomer(Customer customer) throws ServiceException {
         try {
-            // Check if customer already exists
-            Optional<Customer> existing = customerDAO.getCustomerByAccountNumber(customer.getAccountNumber());
-            if (existing.isPresent()) {
-                System.out.println("⚠️ Customer with account number already exists!");
-                return false;
-            }
-
+            validateCustomerForCreateOrUpdate(customer);
+            // Account number uniqueness is enforced in SP (signals) or DAO
             return customerDAO.addCustomer(customer);
-
         } catch (DaoException e) {
             throw new ServiceException("Error while adding customer", e);
         }
     }
 
-
+    /** Update existing customer by account number. */
     public boolean updateCustomer(Customer customer) throws ServiceException {
         try {
+            validateCustomerForCreateOrUpdate(customer);
             return customerDAO.updateCustomer(customer);
         } catch (DaoException e) {
             throw new ServiceException("Error while updating customer", e);
         }
     }
 
+    /** Delete customer by account number. */
     public boolean deleteCustomer(int accountNumber) throws ServiceException {
         try {
+            if (accountNumber <= 0) throw new ServiceException("Invalid account number");
             return customerDAO.deleteCustomer(accountNumber);
         } catch (DaoException e) {
             throw new ServiceException("Error while deleting customer", e);
         }
     }
 
-    public Optional<Customer> getCustomerByAccountNumber(int accountNumber) throws ServiceException {
+    /** Get one customer; returns null if not found. */
+    public Customer getCustomerByAccountNumber(int accountNumber) throws ServiceException {
         try {
+            if (accountNumber <= 0) throw new ServiceException("Invalid account number");
             return customerDAO.getCustomerByAccountNumber(accountNumber);
         } catch (DaoException e) {
             throw new ServiceException("Error while fetching customer", e);
         }
     }
 
+    /** List all customers. */
     public List<Customer> getAllCustomers() throws ServiceException {
         try {
             return customerDAO.getAllCustomers();
@@ -65,4 +65,32 @@ public class CustomerService {
             throw new ServiceException("Error while fetching all customers", e);
         }
     }
+
+    /** Name-contains search; returns empty list if none. */
+    public List<Customer> searchCustomersByName(String namePart) throws ServiceException {
+        try {
+            if (namePart == null || namePart.trim().isEmpty()) {
+                return getAllCustomers();
+            }
+            return customerDAO.searchCustomersByName(namePart.trim());
+        } catch (DaoException e) {
+            throw new ServiceException("Error while searching customers", e);
+        }
+    }
+
+    // --- helpers ---
+
+    private static void validateCustomerForCreateOrUpdate(Customer c) throws ServiceException {
+        if (c == null) throw new ServiceException("Customer cannot be null");
+        if (c.getAccountNumber() <= 0) throw new ServiceException("Invalid account number");
+        if (isBlank(c.getName())) throw new ServiceException("Name is required");
+        if (isBlank(c.getAddress())) throw new ServiceException("Address is required");
+        if (isBlank(c.getTelephone())) throw new ServiceException("Telephone is required");
+        if (!c.getTelephone().matches("^[0-9+\\-() ]{7,20}$")) {
+            throw new ServiceException("Telephone format is invalid");
+        }
+        if (c.getUnitsConsumed() < 0) throw new ServiceException("Units must be non-negative");
+    }
+
+    private static boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
 }

@@ -9,7 +9,10 @@ import com.pahana.edu.dao.CustomerDAOImpl;
 import com.pahana.edu.exception.DaoException;
 import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.Bill;
+import com.pahana.edu.model.Customer;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class BillService {
@@ -25,13 +28,19 @@ public class BillService {
     }
 
     public boolean generateBill(int accountNumber, int unitsConsumed) throws ServiceException {
+        if (unitsConsumed < 0) {
+            throw new ServiceException("Units consumed cannot be negative.");
+        }
+
         try {
-            // ✅ Check if customer exists before generating bill
-            if (!customerDAO.doesCustomerExist(accountNumber)) {
-                throw new ServiceException("Cannot generate bill: Customer with account number " + accountNumber + " does not exist.");
+            // ✅ Existence check via lookup
+            Customer customer = customerDAO.getCustomerByAccountNumber(accountNumber);
+            if (customer == null) {
+                throw new ServiceException("Cannot generate bill: Customer with account number "
+                        + accountNumber + " does not exist.");
             }
 
-            // ✅ Fetch dynamic unit rate from DB
+            // ✅ Fetch unit rate from config
             double rate;
             try {
                 rate = configDAO.getUnitRate();
@@ -39,13 +48,16 @@ public class BillService {
                 throw new ServiceException("Failed to retrieve unit rate from configuration", e);
             }
 
-            double total = unitsConsumed * rate;
+            // Use BigDecimal for currency math (no extra deps)
+            BigDecimal bdRate  = BigDecimal.valueOf(rate);
+            BigDecimal bdUnits = BigDecimal.valueOf(unitsConsumed);
+            BigDecimal total   = bdUnits.multiply(bdRate).setScale(2, RoundingMode.HALF_UP);
 
             Bill bill = new Bill();
             bill.setAccountNumber(accountNumber);
             bill.setUnitsConsumed(unitsConsumed);
-            bill.setUnitRate(rate);
-            bill.setTotalAmount(total);
+            bill.setUnitRate(bdRate.doubleValue());
+            bill.setTotalAmount(total.doubleValue());
 
             return billDAO.addBill(bill);
 

@@ -44,37 +44,37 @@ public class LoginServlet extends HttpServlet {
         final String username = trimOrNull(request.getParameter("username"));
         final String password = trimOrNull(request.getParameter("password"));
 
-        try {
-            if (isBlank(username) || isBlank(password)) {
-                request.setAttribute("error", "Username and password are required.");
-                forwardToLogin(request, response);
-                return;
-            }
+        if (isBlank(username) || isBlank(password)) {
+            request.setAttribute("error", "Username and password are required.");
+            forwardToLogin(request, response);
+            return;
+        }
 
+        try {
+            // Service will throw ServiceException with a user-friendly message if anything is wrong
             User user = userService.authenticateUser(username, password);
 
-            if (user != null && user.isActive()) {
-                HttpSession session = request.getSession(true);
-                session.setAttribute("user", user);
+            // Success: set session and route by role
+            HttpSession session = request.getSession(true);
+            session.setAttribute("user", user);
+            session.setAttribute("role", user.getRole()); // "ADMIN" or "STAFF"
 
-                String role = user.getRole(); // expected "ADMIN" or "STAFF"
-                session.setAttribute("role", role);
-
-                if ("ADMIN".equalsIgnoreCase(role)) {
-                    response.sendRedirect(request.getContextPath() + "/admin-dashboard.jsp");
-                } else if ("STAFF".equalsIgnoreCase(role)) {
-                    response.sendRedirect(request.getContextPath() + "/staff-dashboard.jsp");
-                } else {
-                    log.warning("Unknown role '" + role + "' for user '" + username + "'");
-                    response.sendRedirect(request.getContextPath() + "/index.jsp");
-                }
+            if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+                response.sendRedirect(request.getContextPath() + "/admin-dashboard.jsp");
+            } else if ("STAFF".equalsIgnoreCase(user.getRole())) {
+                response.sendRedirect(request.getContextPath() + "/staff-dashboard.jsp");
             } else {
-                log.info("Login failed or inactive user for username '" + safeLog(username) + "'");
-                request.setAttribute("error", "Invalid username or password, or account inactive.");
-                forwardToLogin(request, response);
+                log.warning("Unknown role '" + user.getRole() + "' for user '" + safeLog(username) + "'");
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
 
         } catch (ServiceException e) {
+            // Expected auth failures (invalid creds / inactive / etc.)
+            log.log(Level.INFO, "Login failed for username '" + safeLog(username) + "': " + e.getMessage());
+            request.setAttribute("error", e.getMessage());
+            forwardToLogin(request, response);
+        } catch (Exception e) {
+            // Unexpected issue
             log.log(Level.SEVERE, "Login error for username '" + safeLog(username) + "'", e);
             request.setAttribute("error", "An internal error occurred. Please try again later.");
             forwardToLogin(request, response);

@@ -20,7 +20,6 @@ public class Customer {
     public int getAccountNumber() {
         return accountNumber;
     }
-
     public void setAccountNumber(int accountNumber) {
         this.accountNumber = accountNumber;
     }
@@ -28,7 +27,6 @@ public class Customer {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -36,7 +34,6 @@ public class Customer {
     public String getAddress() {
         return address;
     }
-
     public void setAddress(String address) {
         this.address = address;
     }
@@ -44,7 +41,6 @@ public class Customer {
     public String getTelephone() {
         return telephone;
     }
-
     public void setTelephone(String telephone) {
         this.telephone = telephone;
     }
@@ -52,7 +48,6 @@ public class Customer {
     public int getUnitsConsumed() {
         return unitsConsumed;
     }
-
     public void setUnitsConsumed(int unitsConsumed) {
         this.unitsConsumed = unitsConsumed;
     }
