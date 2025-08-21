@@ -6,18 +6,18 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/pahanaedu";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "password";
-
-    private DatabaseConnection() {}
+    private static final String URL  = "jdbc:mysql://localhost:3306/pahanaedu?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    private static final String USER = "root";
+    private static final String PASS = "password"; // <-- set your real password
 
     public static Connection getConnection() {
         try {
-            // Return a *new* connection each time (simpler, safer for now)
-            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            // Ensure the MySQL 8+ driver is registered
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return DriverManager.getConnection(URL, USER, PASS);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("MySQL JDBC Driver not found. Ensure mysql-connector-j is on the classpath.", e);
         } catch (SQLException e) {
-            // Convert to unchecked exception so callers don't need try/catch
             throw new RuntimeException("Failed to get DB connection", e);
         }
     }

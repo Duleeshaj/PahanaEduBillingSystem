@@ -1,16 +1,13 @@
 package com.pahana.edu.controller;
 
+import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.User;
 import com.pahana.edu.service.UserService;
-import com.pahana.edu.exception.ServiceException;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
-
 import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,41 +22,61 @@ public class LoginServlet extends HttpServlet {
     private final UserService userService = new UserService();
 
     @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // If already logged in, send to the relevant dashboard
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            Object roleObj = session.getAttribute("role");
+            String role = roleObj != null ? roleObj.toString() : "";
+            if ("ADMIN".equalsIgnoreCase(role)) {
+                response.sendRedirect(request.getContextPath() + "/admin-dashboard.jsp");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/staff-dashboard.jsp");
+            }
+            return;
+        }
+        // Show login page
+        forwardToLogin(request, response);
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String username = trimOrNull(request.getParameter("username"));
         final String password = trimOrNull(request.getParameter("password"));
 
-        try {
-            if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
-                request.setAttribute("errorMessage", "Username and password are required.");
-                forwardToLogin(request, response);
-                return;
-            }
+        if (isBlank(username) || isBlank(password)) {
+            request.setAttribute("error", "Username and password are required.");
+            forwardToLogin(request, response);
+            return;
+        }
 
+        try {
+            // Service will throw ServiceException with a user-friendly message if anything is wrong
             User user = userService.authenticateUser(username, password);
 
-            if (user != null && user.isActive()) {
-                HttpSession session = request.getSession(true);
-                session.setAttribute("loggedUser", user);
+            // Success: set session and route by role
+            HttpSession session = request.getSession(true);
+            session.setAttribute("user", user);
+            session.setAttribute("role", user.getRole()); // "ADMIN" or "STAFF"
 
-                String role = user.getRole();
-                if ("admin".equalsIgnoreCase(role)) {
-                    response.sendRedirect("adminDashboard.jsp");
-                } else if ("staff".equalsIgnoreCase(role)) {
-                    response.sendRedirect("staffDashboard.jsp");
-                } else {
-                    log.warning("Unknown role '" + role + "' for user '" + username + "'");
-                    response.sendRedirect("success.jsp");
-                }
+            if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+                response.sendRedirect(request.getContextPath() + "/admin-dashboard.jsp");
+            } else if ("STAFF".equalsIgnoreCase(user.getRole())) {
+                response.sendRedirect(request.getContextPath() + "/staff-dashboard.jsp");
             } else {
-                log.info("Login failed or inactive user for username '" + username + "'");
-                request.setAttribute("errorMessage", "Invalid username or password, or account inactive.");
-                forwardToLogin(request, response);
+                log.warning("Unknown role '" + user.getRole() + "' for user '" + safeLog(username) + "'");
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
 
         } catch (ServiceException e) {
-            log.log(Level.SEVERE, "Login error for username '" + username + "'", e);
-            request.setAttribute("errorMessage", "An internal error occurred. Please try again later.");
+            // Expected auth failures (invalid creds / inactive / etc.)
+            log.log(Level.INFO, "Login failed for username '" + safeLog(username) + "': " + e.getMessage());
+            request.setAttribute("error", e.getMessage());
+            forwardToLogin(request, response);
+        } catch (Exception e) {
+            // Unexpected issue
+            log.log(Level.SEVERE, "Login error for username '" + safeLog(username) + "'", e);
+            request.setAttribute("error", "An internal error occurred. Please try again later.");
             forwardToLogin(request, response);
         }
     }
@@ -68,12 +85,21 @@ public class LoginServlet extends HttpServlet {
         return s == null ? null : s.trim();
     }
 
-    /**Forward safely to login.jsp. Falls back to error.jsp if forwarding fails.*/
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    private static String safeLog(String s) {
+        // Avoid logging nulls or raw user input with control chars
+        return s == null ? "<null>" : s.replaceAll("[\\r\\n\\t]", " ");
+    }
+
+    /** Forward safely to /login.jsp; falls back to error.jsp if forwarding fails. */
     private static void forwardToLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            request.getRequestDispatcher("login.jsp").forward(request, response);
-        } catch (Exception se) {
-            response.sendRedirect("error.jsp");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
+        } catch (ServletException se) {
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
         }
     }
 }

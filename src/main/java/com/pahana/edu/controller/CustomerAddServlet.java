@@ -3,46 +3,59 @@ package com.pahana.edu.controller;
 import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.Customer;
 import com.pahana.edu.service.CustomerService;
-import com.pahana.edu.util.CustomerRequestMapper;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 import java.io.IOException;
-import java.util.logging.Logger;
 
-@WebServlet("/addCustomer")
+@WebServlet(name="CustomerAddServlet", urlPatterns={"/customers/add"})
 public class CustomerAddServlet extends HttpServlet {
-
-    private static final Logger log = Logger.getLogger(CustomerAddServlet.class.getName());
-    private final CustomerService customerService = new CustomerService();
+    private final CustomerService service = new CustomerService();
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // Optional but recommended for form posts
-        request.setCharacterEncoding("UTF-8");
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        String accStr = req.getParameter("accountNumber");
+        String name = req.getParameter("name");
+        String address = req.getParameter("address");
+        String telephone = req.getParameter("telephone");
+        String email = req.getParameter("email");
+
+        if (isBlank(accStr) || isBlank(name) || isBlank(address) || isBlank(telephone) || isBlank(email)) {
+            req.setAttribute("error", "All fields are required.");
+            req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
+            return;
+        }
 
         try {
-            // Convert request data into Customer object
-            Customer customer = CustomerRequestMapper.toCustomer(request);
-
-            // Call service to register customer
-            boolean success = customerService.registerCustomer(customer);
-
-            if (success) {
-                response.sendRedirect(request.getContextPath() + "/success.jsp");
+            int accountNumber = Integer.parseInt(accStr.trim());
+            Customer c = new Customer(accountNumber, name.trim(), address.trim(), telephone.trim(), email.trim());
+            boolean ok = service.addCustomer(c);
+            if (ok) {
+                resp.sendRedirect(req.getContextPath() + "/customers?msg=added");
             } else {
-                log.warning("Customer registration failed for accountNumber=" + customer.getAccountNumber());
-                response.sendRedirect(request.getContextPath() + "/error.jsp");
+                req.setAttribute("error", "Failed to add customer.");
+                req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
             }
-
-        } catch (IllegalArgumentException e) {
-            log.severe("Bad request data when adding customer: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/error.jsp");
-        } catch (ServiceException e) {
-            log.severe("Service error while adding customer: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/error.jsp");
+        } catch (NumberFormatException nfe) {
+            req.setAttribute("error", "Account number must be a number.");
+            req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
+        } catch (ServiceException se) {
+            req.setAttribute("error", se.getMessage());
+            req.getRequestDispatcher("/customer-add.jsp").forward(req, resp);
         }
+    }
+
+    private static String trim(String s) { return s == null ? null : s.trim(); }
+    private static boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
+
+    private static void forwardBack(HttpServletRequest req, HttpServletResponse resp, String path) throws IOException {
+        try { req.getRequestDispatcher(path).forward(req, resp); }
+        catch (ServletException e) { resp.sendRedirect(req.getContextPath() + "/error.jsp"); }
     }
 }

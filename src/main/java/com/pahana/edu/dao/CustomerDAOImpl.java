@@ -6,124 +6,126 @@ import com.pahana.edu.model.Customer;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
-    public boolean addCustomer(Customer customer) throws DaoException {
-        String query = "{CALL sp_addCustomer(?, ?, ?, ?, ?)}";
-        try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(query)) {
-
-            stmt.setInt(1, customer.getAccountNumber());
-            stmt.setString(2, customer.getName());
-            stmt.setString(3, customer.getAddress());
-            stmt.setString(4, customer.getTelephone());
-            stmt.setInt(5, customer.getUnitsConsumed());
-            return stmt.executeUpdate() > 0;
-
+    public boolean addCustomer(Customer c) throws DaoException {
+        final String sql = "{ CALL sp_addCustomer(?, ?, ?, ?, ?) }";
+        try (Connection con = DatabaseConnection.getConnection();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt(1, c.getAccountNumber());
+            cs.setString(2, c.getName());
+            cs.setString(3, c.getAddress());
+            cs.setString(4, c.getTelephone());
+            cs.setString(5, c.getEmail());
+            cs.execute();
+            return true;
         } catch (SQLException e) {
-            throw new DaoException("Failed to add customer", e);
+            throw wrap("addCustomer failed", e);
         }
     }
 
     @Override
-    public boolean updateCustomer(Customer customer) throws DaoException {
-        String query = "{CALL sp_updateCustomer(?, ?, ?, ?, ?)}";
-        try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(query)) {
-
-            stmt.setInt(1, customer.getAccountNumber());
-            stmt.setString(2, customer.getName());
-            stmt.setString(3, customer.getAddress());
-            stmt.setString(4, customer.getTelephone());
-            stmt.setInt(5, customer.getUnitsConsumed());
-            return stmt.executeUpdate() > 0;
-
+    public Customer getCustomerByAccountNumber(int accountNumber) throws DaoException {
+        final String sql = "{ CALL sp_getCustomerByAccountNumber(?) }";
+        try (Connection con = DatabaseConnection.getConnection();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt(1, accountNumber);
+            try (ResultSet rs = cs.executeQuery()) {
+                if (rs.next()) return mapRow(rs);
+                return null;
+            }
         } catch (SQLException e) {
-            throw new DaoException("Failed to update customer", e);
+            throw wrap("getCustomerByAccountNumber failed", e);
+        }
+    }
+
+    @Override
+    public boolean updateCustomer(Customer c) throws DaoException {
+        final String sql = "{ CALL sp_updateCustomer(?, ?, ?, ?, ?) }";
+        try (Connection con = DatabaseConnection.getConnection();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt(1, c.getAccountNumber());
+            cs.setString(2, c.getName());
+            cs.setString(3, c.getAddress());
+            cs.setString(4, c.getTelephone());
+            cs.setString(5, c.getEmail());
+            cs.execute();
+            return true;
+        } catch (SQLException e) {
+            throw wrap("updateCustomer failed", e);
         }
     }
 
     @Override
     public boolean deleteCustomer(int accountNumber) throws DaoException {
-        String query = "{CALL sp_deleteCustomer(?)}";
-        try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(query)) {
-
-            stmt.setInt(1, accountNumber);
-            return stmt.executeUpdate() > 0;
-
+        final String sql = "{ CALL sp_deleteCustomer(?) }";
+        try (Connection con = DatabaseConnection.getConnection();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt(1, accountNumber);
+            cs.execute();
+            return true;
         } catch (SQLException e) {
-            throw new DaoException("Failed to delete customer", e);
-        }
-    }
-
-    @Override
-    public Optional<Customer> getCustomerByAccountNumber(int accountNumber) throws DaoException {
-        String query = "{CALL sp_getCustomerByAccountNumber(?)}";
-        try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(query)) {
-
-            stmt.setInt(1, accountNumber);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapRow(rs));
-                }
-                return Optional.empty();
-            }
-
-        } catch (SQLException e) {
-            throw new DaoException("Failed to fetch customer", e);
+            throw wrap("deleteCustomer failed", e);
         }
     }
 
     @Override
     public List<Customer> getAllCustomers() throws DaoException {
-        String query = "{CALL sp_getAllCustomers()}";
-        List<Customer> customers = new ArrayList<>();
-        try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                customers.add(mapRow(rs));
-            }
-            return customers;
-
+        final String sql = "{ CALL sp_getAllCustomers() }";
+        final List<Customer> out = new ArrayList<>();
+        try (Connection con = DatabaseConnection.getConnection();
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
+            while (rs.next()) out.add(mapRow(rs));
+            return out;
         } catch (SQLException e) {
-            throw new DaoException("Failed to fetch all customers", e);
+            throw wrap("getAllCustomers failed", e);
         }
     }
 
     @Override
-    public boolean doesCustomerExist(int accountNumber) throws DaoException {
-        String query = "SELECT COUNT(*) FROM customers WHERE account_number = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            stmt.setInt(1, accountNumber);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                } else {
-                    return false;
-                }
+    public List<Customer> searchCustomersByName(String namePart) throws DaoException {
+        final String sql =
+                "SELECT account_number, name, address, telephone, email " +
+                        "FROM customers WHERE name LIKE ? ORDER BY name ASC";
+        final List<Customer> out = new ArrayList<>();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + (namePart == null ? "" : namePart) + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) out.add(mapRow(rs));
             }
-
+            return out;
         } catch (SQLException e) {
-            throw new DaoException("Failed to check if customer exists", e);
+            throw wrap("searchCustomersByName failed", e);
         }
     }
 
-    private Customer mapRow(ResultSet rs) throws SQLException {
+    @Override
+    public boolean doesCustomerExist(int accountNumber) {
+        final String sql = "SELECT 1 FROM customers WHERE account_number = ? LIMIT 1";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, accountNumber);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+        } catch (SQLException e) {
+            throw new RuntimeException("doesCustomerExist failed: " + e.getMessage(), e);
+        }
+    }
+
+    private static Customer mapRow(ResultSet rs) throws SQLException {
         Customer c = new Customer();
         c.setAccountNumber(rs.getInt("account_number"));
         c.setName(rs.getString("name"));
         c.setAddress(rs.getString("address"));
         c.setTelephone(rs.getString("telephone"));
-        c.setUnitsConsumed(rs.getInt("units_consumed"));
+        c.setEmail(rs.getString("email"));
         return c;
+    }
+
+    private static DaoException wrap(String msg, SQLException e) {
+        return new DaoException(msg + ": " + e.getMessage(), e);
     }
 }

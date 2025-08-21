@@ -1,100 +1,34 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%
+    String ctx = request.getContextPath();
+    Object u = session.getAttribute("user");
+    boolean loggedIn = (u != null);
+%>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Pahana Edu Billing System</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #004080, #0066cc);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            text-align: center;
-            padding: 20px;
-            color: white;
-        }
-        header h1 {
-            font-size: 32px;
-            margin: 0;
-            letter-spacing: 1px;
-        }
-        .container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-        }
-        .card {
-            background-color: white;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        .card h2 {
-            margin-bottom: 15px;
-            color: #004080;
-        }
-        .card p {
-            color: #555;
-            font-size: 16px;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-        .btn {
-            background-color: #004080;
-            color: white;
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn:hover {
-            background-color: #0066cc;
-        }
-        footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #003060;
-            color: white;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
+<!-- Topbar -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111827;color:#fff;">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em;">
+        <div style="width:28px;height:28px;border-radius:8px;background:#3b82f6;display:inline-flex;align-items:center;justify-content:center;font-weight:800;">
+            P
+        </div>
+        <div>Pahana Edu</div>
+    </div>
 
-<header>
-    <h1>Pahana Edu Billing System</h1>
-</header>
+    <div>
+        <a href="<%= ctx %>/home"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#1f2937;color:#e5e7eb;display:inline-block;">Home</a>
 
-<div class="container">
-    <div class="card">
-        <h2>Welcome!</h2>
-        <p>
-            Manage customer accounts, items, and billing seamlessly in one place.
-            Secure, efficient, and tailored for Pahana Edu Bookshop's needs.
-        </p>
-        <a href="login.jsp" class="btn">Login to Continue</a>
+        <a href="<%= ctx %>/help.jsp"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#1f2937;color:#e5e7eb;display:inline-block;">Help</a>
+
+        <% if (!loggedIn) { %>
+        <a href="<%= ctx %>/login.jsp"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#3b82f6;color:#fff;display:inline-block;">Login</a>
+        <% } else { %>
+        <a href="<%= ctx %>/logout"
+           style="margin-left:12px;padding:8px 12px;border-radius:8px;background:#3b82f6;color:#fff;display:inline-block;">Logout</a>
+        <% } %>
     </div>
 </div>
 
-<footer>
-    &copy; <%= java.time.Year.now() %> Pahana Edu Bookshop. All Rights Reserved.
-</footer>
-
-</body>
-</html>
+<%@ include file="/_footer.jsp" %>

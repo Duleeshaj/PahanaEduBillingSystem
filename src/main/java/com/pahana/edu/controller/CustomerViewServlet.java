@@ -1,55 +1,34 @@
 package com.pahana.edu.controller;
 
+import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.Customer;
 import com.pahana.edu.service.CustomerService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 import java.io.IOException;
-
-import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/viewCustomer")
+@WebServlet("/customers/view")
 public class CustomerViewServlet extends HttpServlet {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(CustomerViewServlet.class.getName());
-    private final CustomerService customerService = new CustomerService();
+    private final CustomerService service = new CustomerService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String sAcc = req.getParameter("accountNumber");
+        if (sAcc == null) { resp.sendRedirect(req.getContextPath() + "/customers"); return; }
         try {
-            String accountParam = request.getParameter("accountNumber");
-            int accountNumber = Integer.parseInt(accountParam);
-
-            Customer customer = customerService.getCustomerByAccountNumber(accountNumber).orElse(null);
-
-            if (customer != null) {
-                request.setAttribute("customer", customer);
-                try {
-                    request.getRequestDispatcher("customerView.jsp").forward(request, response);
-                } catch (ServletException se) {
-                    log.log(Level.SEVERE, "Servlet exception while forwarding to customerView.jsp", se);
-                    response.sendRedirect("error.jsp");
-                }
-            } else {
-                response.sendRedirect("notfound.jsp");
-            }
-
-        } catch (NumberFormatException e) {
-            log.log(Level.WARNING, "Invalid account number format", e);
-            response.sendRedirect("error.jsp");
-
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "Error viewing customer", e);
-            response.sendRedirect("error.jsp");
+            int account = Integer.parseInt(sAcc);
+            Customer c = service.getCustomerByAccountNumber(account);
+            if (c == null) { resp.sendRedirect(req.getContextPath() + "/customers?err=notfound"); return; }
+            req.setAttribute("customer", c);
+            req.getRequestDispatcher("/customer-view.jsp").forward(req, resp);
+        } catch (NumberFormatException | ServiceException | ServletException e) {
+            log.log(Level.WARNING, "View load failed", e);
+            resp.sendRedirect(req.getContextPath() + "/customers?err=invalid");
         }
     }
 }
