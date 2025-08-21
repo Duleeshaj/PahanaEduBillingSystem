@@ -27,10 +27,7 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
-    /**
-     * DAO-level auth (optional): fetch by username (active=1) and verify with PasswordUtils.
-     * Returns null if not found / inactive / password mismatch.
-     */
+    /**DAO-level auth (optional): fetch by username (active=1) and verify with PasswordUtils.*/
     @Override
     public User getUserByUsernameAndPassword(String username, String password) throws DaoException {
         final String sql = "SELECT user_id, username, password, role, active FROM users WHERE username = ? AND active = 1";
