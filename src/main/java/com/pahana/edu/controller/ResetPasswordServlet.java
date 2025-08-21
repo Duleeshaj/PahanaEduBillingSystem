@@ -32,6 +32,6 @@ public class ResetPasswordServlet extends HttpServlet {
             request.setAttribute("error", e.getMessage());
         }
 
-        request.getRequestDispatcher("userManagement.jsp").forward(request, response);
+        request.getRequestDispatcher("/admin/staff").forward(request, response);
     }
 }
