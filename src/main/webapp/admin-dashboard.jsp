@@ -31,6 +31,13 @@
             <div style="color:#6b7280;">Manage items and stock levels.</div>
         </a>
 
+        <a href="staff-management.jsp"
+           style="display:block;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;text-decoration:none;color:#1f2937;box-shadow:0 1px 2px rgba(0,0,0,.04);">
+            <h3 style="margin:0 0 8px 0;font-size:1.05rem;">Staff Management</h3>
+            <div style="color:#6b7280;">Add staff, enable/disable, reset passwords.</div>
+        </a>
+
+
         <a href="billing.jsp"
            style="display:block;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;
               text-decoration:none;color:#1f2937;box-shadow:0 1px 2px rgba(0,0,0,.04);">
