@@ -1004,7 +1004,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Current>1</Current>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
-      <LastIntrospectionLocalTimestamp>2025-08-20.18:52:26</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-08-21.03:32:46</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </schema>
     <schema id="291" parent="1" name="performance_schema">
@@ -1032,73 +1032,72 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <Host>localhost</Host>
       <Plugin>caching_sha2_password</Plugin>
     </user>
-    <routine id="297" parent="290" name="sp_addBill">
-      <Definer>root@localhost</Definer>
-      <DetailsLevel>3</DetailsLevel>
-      <RoutineKind>procedure</RoutineKind>
-      <SourceTextLength>285</SourceTextLength>
-    </routine>
-    <routine id="298" parent="290" name="sp_addCustomer">
-      <Definer>root@localhost</Definer>
-      <DetailsLevel>3</DetailsLevel>
-      <RoutineKind>procedure</RoutineKind>
-      <SourceTextLength>363</SourceTextLength>
-    </routine>
-    <routine id="299" parent="290" name="sp_addItem">
+    <routine id="297" parent="290" name="sp_addCustomer">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
       <SourceTextLength>157</SourceTextLength>
     </routine>
-    <routine id="300" parent="290" name="sp_deleteCustomer">
+    <routine id="298" parent="290" name="sp_addItem">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
-      <SourceTextLength>197</SourceTextLength>
+      <SourceTextLength>157</SourceTextLength>
     </routine>
-    <routine id="301" parent="290" name="sp_deleteItem">
+    <routine id="299" parent="290" name="sp_deleteCustomer">
+      <Definer>root@localhost</Definer>
+      <DetailsLevel>3</DetailsLevel>
+      <RoutineKind>procedure</RoutineKind>
+      <SourceTextLength>76</SourceTextLength>
+    </routine>
+    <routine id="300" parent="290" name="sp_deleteItem">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
       <SourceTextLength>94</SourceTextLength>
     </routine>
-    <routine id="302" parent="290" name="sp_getAllCustomers">
+    <routine id="301" parent="290" name="sp_getAllCustomers">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
-      <SourceTextLength>119</SourceTextLength>
+      <SourceTextLength>110</SourceTextLength>
     </routine>
-    <routine id="303" parent="290" name="sp_getAllItems">
+    <routine id="302" parent="290" name="sp_getAllItems">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
       <SourceTextLength>99</SourceTextLength>
     </routine>
-    <routine id="304" parent="290" name="sp_getCustomerByAccountNumber">
+    <routine id="303" parent="290" name="sp_getCustomerByAccountNumber">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
-      <SourceTextLength>141</SourceTextLength>
+      <SourceTextLength>132</SourceTextLength>
     </routine>
-    <routine id="305" parent="290" name="sp_getItemById">
+    <routine id="304" parent="290" name="sp_getItemById">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
       <SourceTextLength>107</SourceTextLength>
     </routine>
-    <routine id="306" parent="290" name="sp_updateCustomer">
+    <routine id="305" parent="290" name="sp_updateCustomer">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
-      <SourceTextLength>315</SourceTextLength>
+      <SourceTextLength>184</SourceTextLength>
     </routine>
-    <routine id="307" parent="290" name="sp_updateItem">
+    <routine id="306" parent="290" name="sp_updateItem">
       <Definer>root@localhost</Definer>
       <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
       <SourceTextLength>202</SourceTextLength>
     </routine>
-    <table id="308" parent="290" name="audit_logs">
+    <table id="307" parent="290" name="audit_logs">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_0900_ai_ci</CollationName>
+    </table>
+    <table id="308" parent="290" name="bill_items">
       <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
@@ -1132,343 +1131,378 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="315" parent="297" name="p_units_consumed">
+    <argument id="315" parent="297" name="p_name">
       <Position>2</Position>
-      <StoredType>int|0s</StoredType>
+      <StoredType>varchar(100)|0s</StoredType>
     </argument>
-    <argument id="316" parent="297" name="p_unit_rate">
+    <argument id="316" parent="297" name="p_address">
       <Position>3</Position>
-      <StoredType>decimal(10,2 digit)|0s</StoredType>
+      <StoredType>varchar(255)|0s</StoredType>
     </argument>
-    <argument id="317" parent="297" name="p_bill_id">
-      <ArgumentDirection>O</ArgumentDirection>
+    <argument id="317" parent="297" name="p_telephone">
       <Position>4</Position>
-      <StoredType>int|0s</StoredType>
+      <StoredType>varchar(20)|0s</StoredType>
     </argument>
-    <argument id="318" parent="298" name="p_account_number">
-      <Position>1</Position>
-      <StoredType>int|0s</StoredType>
+    <argument id="318" parent="297" name="p_email">
+      <Position>5</Position>
+      <StoredType>varchar(120)|0s</StoredType>
     </argument>
     <argument id="319" parent="298" name="p_name">
-      <Position>2</Position>
-      <StoredType>varchar(100)|0s</StoredType>
-    </argument>
-    <argument id="320" parent="298" name="p_address">
-      <Position>3</Position>
-      <StoredType>varchar(255)|0s</StoredType>
-    </argument>
-    <argument id="321" parent="298" name="p_telephone">
-      <Position>4</Position>
-      <StoredType>varchar(20)|0s</StoredType>
-    </argument>
-    <argument id="322" parent="298" name="p_units">
-      <Position>5</Position>
-      <StoredType>int|0s</StoredType>
-    </argument>
-    <argument id="323" parent="299" name="p_name">
       <Position>1</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </argument>
-    <argument id="324" parent="299" name="p_description">
+    <argument id="320" parent="298" name="p_description">
       <Position>2</Position>
       <StoredType>text|0s</StoredType>
     </argument>
-    <argument id="325" parent="299" name="p_price">
+    <argument id="321" parent="298" name="p_price">
       <Position>3</Position>
       <StoredType>decimal(10,2 digit)|0s</StoredType>
     </argument>
-    <argument id="326" parent="299" name="p_stock">
+    <argument id="322" parent="298" name="p_stock">
       <Position>4</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="327" parent="300" name="p_account_number">
+    <argument id="323" parent="299" name="p_account_number">
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="328" parent="301" name="p_item_id">
+    <argument id="324" parent="300" name="p_item_id">
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="329" parent="304" name="p_account_number">
+    <argument id="325" parent="303" name="p_account_number">
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="330" parent="305" name="p_item_id">
+    <argument id="326" parent="304" name="p_item_id">
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="331" parent="306" name="p_account_number">
+    <argument id="327" parent="305" name="p_account_number">
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="332" parent="306" name="p_name">
+    <argument id="328" parent="305" name="p_name">
       <Position>2</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </argument>
-    <argument id="333" parent="306" name="p_address">
+    <argument id="329" parent="305" name="p_address">
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </argument>
-    <argument id="334" parent="306" name="p_telephone">
+    <argument id="330" parent="305" name="p_telephone">
       <Position>4</Position>
       <StoredType>varchar(20)|0s</StoredType>
     </argument>
-    <argument id="335" parent="306" name="p_units">
+    <argument id="331" parent="305" name="p_email">
       <Position>5</Position>
-      <StoredType>int|0s</StoredType>
+      <StoredType>varchar(120)|0s</StoredType>
     </argument>
-    <argument id="336" parent="307" name="p_item_id">
+    <argument id="332" parent="306" name="p_item_id">
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <argument id="337" parent="307" name="p_name">
+    <argument id="333" parent="306" name="p_name">
       <Position>2</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </argument>
-    <argument id="338" parent="307" name="p_description">
+    <argument id="334" parent="306" name="p_description">
       <Position>3</Position>
       <StoredType>text|0s</StoredType>
     </argument>
-    <argument id="339" parent="307" name="p_price">
+    <argument id="335" parent="306" name="p_price">
       <Position>4</Position>
       <StoredType>decimal(10,2 digit)|0s</StoredType>
     </argument>
-    <argument id="340" parent="307" name="p_stock">
+    <argument id="336" parent="306" name="p_stock">
       <Position>5</Position>
       <StoredType>int|0s</StoredType>
     </argument>
-    <column id="341" parent="308" name="id">
+    <column id="337" parent="307" name="id">
       <AutoIncrement>1</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <column id="342" parent="308" name="action">
+    <column id="338" parent="307" name="action">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="343" parent="308" name="timestamp">
+    <column id="339" parent="307" name="timestamp">
       <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
       <Position>3</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <index id="344" parent="308" name="PRIMARY">
+    <index id="340" parent="307" name="PRIMARY">
       <ColNames>id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="345" parent="308" name="PRIMARY">
+    <key id="341" parent="307" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="346" parent="309" name="bill_id">
+    <column id="342" parent="308" name="bill_item_id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="343" parent="308" name="bill_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="344" parent="308" name="item_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="345" parent="308" name="qty">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="346" parent="308" name="unit_price">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>decimal(10,2 digit)|0s</StoredType>
+    </column>
+    <column id="347" parent="308" name="line_total">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>decimal(12,2 digit)|0s</StoredType>
+    </column>
+    <foreign-key id="348" parent="308" name="fk_bi_bill">
+      <ColNames>bill_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>bill_id</RefColNames>
+      <RefTableName>bills</RefTableName>
+    </foreign-key>
+    <foreign-key id="349" parent="308" name="fk_bi_item">
+      <ColNames>item_id</ColNames>
+      <RefColNames>item_id</RefColNames>
+      <RefTableName>items</RefTableName>
+    </foreign-key>
+    <index id="350" parent="308" name="PRIMARY">
+      <ColNames>bill_item_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="351" parent="308" name="idx_bi_bill">
+      <ColNames>bill_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="352" parent="308" name="fk_bi_item">
+      <ColNames>item_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="353" parent="308" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="354" parent="309" name="bill_id">
       <AutoIncrement>8</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <column id="347" parent="309" name="account_number">
+    <column id="355" parent="309" name="account_number">
       <Position>2</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <column id="348" parent="309" name="units_consumed">
+    <column id="356" parent="309" name="total_amount">
       <Position>3</Position>
-      <StoredType>int|0s</StoredType>
-    </column>
-    <column id="349" parent="309" name="unit_rate">
-      <Position>4</Position>
       <StoredType>decimal(10,2 digit)|0s</StoredType>
     </column>
-    <column id="350" parent="309" name="total_amount">
-      <Position>5</Position>
-      <StoredType>decimal(10,2 digit)|0s</StoredType>
-    </column>
-    <column id="351" parent="309" name="bill_date">
+    <column id="357" parent="309" name="bill_date">
       <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
-      <Position>6</Position>
+      <Position>4</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <foreign-key id="352" parent="309" name="bills_ibfk_1">
+    <foreign-key id="358" parent="309" name="bills_ibfk_1">
       <ColNames>account_number</ColNames>
       <RefColNames>account_number</RefColNames>
       <RefTableName>customers</RefTableName>
     </foreign-key>
-    <foreign-key id="353" parent="309" name="fk_bills_customer">
+    <foreign-key id="359" parent="309" name="fk_bills_customer">
       <ColNames>account_number</ColNames>
       <OnUpdate>cascade</OnUpdate>
       <RefColNames>account_number</RefColNames>
       <RefTableName>customers</RefTableName>
     </foreign-key>
-    <index id="354" parent="309" name="PRIMARY">
+    <index id="360" parent="309" name="PRIMARY">
       <ColNames>bill_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="355" parent="309" name="idx_bills_account">
+    <index id="361" parent="309" name="idx_bills_account">
       <ColNames>account_number</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="356" parent="309" name="PRIMARY">
+    <key id="362" parent="309" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="357" parent="310" name="config_key">
+    <column id="363" parent="310" name="config_key">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
-    <column id="358" parent="310" name="config_value">
+    <column id="364" parent="310" name="config_value">
       <Position>2</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <index id="359" parent="310" name="PRIMARY">
+    <index id="365" parent="310" name="PRIMARY">
       <ColNames>config_key</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="360" parent="310" name="PRIMARY">
+    <key id="366" parent="310" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="361" parent="311" name="account_number">
+    <column id="367" parent="311" name="account_number">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <column id="362" parent="311" name="name">
+    <column id="368" parent="311" name="name">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
-    <column id="363" parent="311" name="address">
+    <column id="369" parent="311" name="address">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="364" parent="311" name="telephone">
+    <column id="370" parent="311" name="telephone">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>varchar(20)|0s</StoredType>
     </column>
-    <column id="365" parent="311" name="email">
+    <column id="371" parent="311" name="email">
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StoredType>varchar(120)|0s</StoredType>
     </column>
-    <index id="366" parent="311" name="PRIMARY">
+    <index id="372" parent="311" name="PRIMARY">
       <ColNames>account_number</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="367" parent="311" name="idx_customers_name">
+    <index id="373" parent="311" name="idx_customers_name">
       <ColNames>name</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="368" parent="311" name="PRIMARY">
+    <key id="374" parent="311" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="369" parent="312" name="item_id">
+    <column id="375" parent="312" name="item_id">
       <AutoIncrement>1</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <column id="370" parent="312" name="name">
+    <column id="376" parent="312" name="name">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
-    <column id="371" parent="312" name="description">
+    <column id="377" parent="312" name="description">
       <Position>3</Position>
       <StoredType>text|0s</StoredType>
     </column>
-    <column id="372" parent="312" name="price">
+    <column id="378" parent="312" name="price">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>decimal(10,2 digit)|0s</StoredType>
     </column>
-    <column id="373" parent="312" name="stock">
+    <column id="379" parent="312" name="stock">
       <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <index id="374" parent="312" name="PRIMARY">
+    <index id="380" parent="312" name="PRIMARY">
       <ColNames>item_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="375" parent="312" name="idx_items_name">
+    <index id="381" parent="312" name="idx_items_name">
       <ColNames>name</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="376" parent="312" name="PRIMARY">
+    <key id="382" parent="312" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <check id="377" parent="313" name="chk_password_required_for_roles">
+    <check id="383" parent="313" name="chk_password_required_for_roles">
       <Predicate>((`role` = _utf8mb4\&apos;customer\&apos;) and (`password` is null)) or ((`role` &lt;&gt; _utf8mb4\&apos;customer\&apos;) and (`password` is not null))</Predicate>
     </check>
-    <column id="378" parent="313" name="user_id">
+    <column id="384" parent="313" name="user_id">
       <AutoIncrement>10</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </column>
-    <column id="379" parent="313" name="username">
+    <column id="385" parent="313" name="username">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>varchar(50)|0s</StoredType>
     </column>
-    <column id="380" parent="313" name="password">
+    <column id="386" parent="313" name="password">
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="381" parent="313" name="role">
+    <column id="387" parent="313" name="role">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>varchar(20)|0s</StoredType>
     </column>
-    <column id="382" parent="313" name="active">
+    <column id="388" parent="313" name="active">
       <DefaultExpression>1</DefaultExpression>
       <Position>5</Position>
       <StoredType>tinyint(1)|0s</StoredType>
     </column>
-    <index id="383" parent="313" name="PRIMARY">
+    <index id="389" parent="313" name="PRIMARY">
       <ColNames>user_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="384" parent="313" name="username">
+    <index id="390" parent="313" name="username">
       <ColNames>username</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="385" parent="313" name="username_2">
+    <index id="391" parent="313" name="username_2">
       <ColNames>username</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="386" parent="313" name="PRIMARY">
+    <key id="392" parent="313" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <key id="387" parent="313" name="username">
+    <key id="393" parent="313" name="username">
       <UnderlyingIndexName>username</UnderlyingIndexName>
     </key>
-    <key id="388" parent="313" name="username_2">
+    <key id="394" parent="313" name="username_2">
       <UnderlyingIndexName>username_2</UnderlyingIndexName>
     </key>
-    <trigger id="389" parent="313" name="enforce_password_rule_update">
+    <trigger id="395" parent="313" name="enforce_password_rule_update">
       <Definer>root@localhost</Definer>
       <Events>U</Events>
       <SourceTextLength>191</SourceTextLength>

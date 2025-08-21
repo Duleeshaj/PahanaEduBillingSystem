@@ -2,112 +2,75 @@ package com.pahana.edu.service;
 
 import com.pahana.edu.dao.BillDAO;
 import com.pahana.edu.dao.BillDAOImpl;
-import com.pahana.edu.dao.ConfigDAO;
-import com.pahana.edu.dao.ConfigDAOImpl;
 import com.pahana.edu.dao.CustomerDAO;
 import com.pahana.edu.dao.CustomerDAOImpl;
 import com.pahana.edu.exception.DaoException;
 import com.pahana.edu.exception.ServiceException;
 import com.pahana.edu.model.Bill;
+import com.pahana.edu.model.BillItem;
+import com.pahana.edu.model.BillItemRequest;
+import com.pahana.edu.model.Customer;
 
 import java.util.List;
 
-/**
- * Business logic for Billing.
- * - Validates inputs and preconditions
- * - Fetches pricing configuration (unit rate)
- * - Delegates persistence to DAO (which uses stored procedures)
- */
 public class BillService {
 
-    private final BillDAO billDAO;
-    private final CustomerDAO customerDAO;
-    private final ConfigDAO configDAO;
+    private final BillDAO billDAO = new BillDAOImpl();
+    private final CustomerDAO customerDAO = new CustomerDAOImpl();
 
-    public BillService() {
-        this.billDAO = new BillDAOImpl();
-        this.customerDAO = new CustomerDAOImpl();
-        this.configDAO = new ConfigDAOImpl();
-    }
-
-    /**
-     * Generate a bill for a given customer and units.
-     * Steps:
-     *  1) Validate numbers
-     *  2) Ensure customer exists
-     *  3) Load current unit rate from config
-     *  4) Compute total = units * rate
-     *  5) Persist via DAO (SP: sp_addBill)
-     */
-    public boolean generateBill(int accountNumber, int unitsConsumed) throws ServiceException {
-        if (accountNumber <= 0) {
-            throw new ServiceException("Invalid account number");
-        }
-        if (unitsConsumed < 0) {
-            throw new ServiceException("Units cannot be negative");
-        }
-
+    /** emailOrNull can be null; accountNumberOrZero can be 0. One of them must be provided. */
+    public int generateBill(Integer accountNumberOrNull, String emailOrNull, List<BillItemRequest> items)
+            throws ServiceException {
         try {
-            // Ensure customer exists
-            boolean exists = customerDAO.doesCustomerExist(accountNumber);
-            if (!exists) {
-                throw new ServiceException("Customer " + accountNumber + " does not exist.");
+            int acc;
+            if (accountNumberOrNull != null && accountNumberOrNull > 0) {
+                acc = accountNumberOrNull;
+            } else if (emailOrNull != null && !emailOrNull.trim().isEmpty()) {
+                Customer c = findByEmail(emailOrNull.trim());
+                if (c == null) throw new ServiceException("Customer not found for email");
+                acc = c.getAccountNumber();
+            } else {
+                throw new ServiceException("Provide account number or email");
             }
 
-            // Get current unit rate from configuration
-            double unitRate = configDAO.getUnitRate();
-            if (unitRate < 0) {
-                throw new ServiceException("Invalid unit rate in configuration");
-            }
+            if (items == null || items.isEmpty()) throw new ServiceException("No items selected");
 
-            // Compute total
-            double total = unitsConsumed * unitRate;
-
-            // Build Bill model
-            Bill bill = new Bill();
-            bill.setAccountNumber(accountNumber);
-            bill.setUnitsConsumed(unitsConsumed);
-            bill.setUnitRate(unitRate);
-            bill.setTotalAmount(total);
-
-            // Persist via DAO (stored procedure)
-            return billDAO.addBill(bill);
+            return billDAO.createBill(acc, items);
 
         } catch (DaoException e) {
-            throw new ServiceException("Error while generating bill", e);
+            throw new ServiceException("Failed to generate bill", e);
         }
     }
 
-    /** Get all bills for a customer (SP: sp_getBillsByCustomer). */
-    public List<Bill> getBillsByCustomer(int accountNumber) throws ServiceException {
-        if (accountNumber <= 0) {
-            throw new ServiceException("Invalid account number");
-        }
-        try {
-            return billDAO.getBillsByCustomer(accountNumber);
-        } catch (DaoException e) {
-            throw new ServiceException("Error while retrieving bills for customer " + accountNumber, e);
-        }
+    public Bill getBill(int billId) throws ServiceException {
+        try { return billDAO.getBillById(billId); }
+        catch (DaoException e) { throw new ServiceException("Failed to get bill", e); }
     }
 
-    /** Get a single bill by its ID (SP: sp_getBillById). */
-    public Bill getBillById(int billId) throws ServiceException {
-        if (billId <= 0) {
-            throw new ServiceException("Invalid bill id");
-        }
-        try {
-            return billDAO.getBillById(billId);
-        } catch (DaoException e) {
-            throw new ServiceException("Error while retrieving bill " + billId, e);
-        }
+    public List<Bill> listAll() throws ServiceException {
+        try { return billDAO.getAllBills(); }
+        catch (DaoException e) { throw new ServiceException("Failed to list bills", e); }
     }
 
-    /** Get all bills (SP: sp_getAllBills). Useful for admin history screen. */
-    public List<Bill> getAllBills() throws ServiceException {
-        try {
-            return billDAO.getAllBills();
-        } catch (DaoException e) {
-            throw new ServiceException("Error while retrieving all bills", e);
-        }
+    public List<Bill> listByCustomer(int accountNumber) throws ServiceException {
+        try { return billDAO.getBillsByCustomer(accountNumber); }
+        catch (DaoException e) { throw new ServiceException("Failed to list customer bills", e); }
+    }
+
+    public List<BillItem> getItems(int billId) throws ServiceException {
+        try { return billDAO.getBillItems(billId); }
+        catch (DaoException e) { throw new ServiceException("Failed to get bill items", e); }
+    }
+
+    private Customer findByEmail(String email) throws DaoException {
+        // quick helper since your DAO doesn’t have it yet (add it if needed)
+        // simple direct SQL fallback:
+        return customerDAO.searchCustomersByName("")  // quick reuse, but better: implement getByEmail in DAO
+                .stream().filter(c -> email.equalsIgnoreCase(c.getEmail())).findFirst().orElse(null);
+    }
+
+    public List<Bill> listByDateRange(java.time.LocalDate from, java.time.LocalDate to) throws ServiceException {
+        try { return billDAO.getBillsByDateRange(from, to); }
+        catch (DaoException e) { throw new ServiceException("Failed to list by date", e); }
     }
 }
