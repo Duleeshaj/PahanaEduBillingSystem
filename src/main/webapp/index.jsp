@@ -31,4 +31,36 @@
     </div>
 </div>
 
+<!-- Welcome Box (reduced height) -->
+<div style="display:flex;align-items:center;justify-content:center;
+            padding:48px 16px;          /* ↓ was 96px */
+            min-height:70vh;            /* ↓ was ~full viewport */
+            background:linear-gradient(180deg,#0d47a1 0%, #0b2e91 100%);">
+    <div style="width:min(640px,92vw);
+              background:#ffffff;
+              border:none;              /* no white outline */
+              border-radius:18px;
+              padding:24px 22px;        /* ↓ a bit tighter */
+              box-shadow:0 16px 36px rgba(2,20,60,.18);
+              text-align:center;">
+        <h2 style="margin:0 0 10px;font-size:1.8rem;color:#0b2970;letter-spacing:.2px;">Welcome!</h2>
+        <p style="margin:0 0 18px;color:#4b5563;line-height:1.55;">
+            Manage customer accounts, items, and billing seamlessly in one place.
+            Secure, efficient, and tailored for Pahana Edu bookshop’s needs.
+        </p>
+
+        <% if (!loggedIn) { %>
+        <a href="<%= ctx %>/login.jsp"
+           style="display:inline-block;padding:10px 16px;border-radius:10px;background:#1e40af;color:#fff;text-decoration:none;border:1px solid #1c3a9c;box-shadow:0 6px 14px rgba(30,64,175,.25);">
+            Continue
+        </a>
+        <% } else { %>
+        <a href="<%= ctx %>/admin/staff"
+           style="display:inline-block;padding:10px 16px;border-radius:2px;background:#1e40af;color:#fff;text-decoration:none;border:1px solid #1c3a9c;box-shadow:0 6px 14px rgba(30,64,175,.25);">
+            Go to Dashboard
+        </a>
+        <% } %>
+    </div>
+</div>
+
 <%@ include file="/_footer.jsp" %>
