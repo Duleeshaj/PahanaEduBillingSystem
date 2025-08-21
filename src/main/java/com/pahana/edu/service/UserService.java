@@ -22,7 +22,6 @@ public class UserService {
         if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             throw new ServiceException("Username cannot be empty");
         }
-
         // Role-based restrictions
         if ("ADMIN".equalsIgnoreCase(addedByRole)) {
             if (!user.getRole().equalsIgnoreCase("STAFF") &&
@@ -37,16 +36,40 @@ public class UserService {
             throw new ServiceException("Permission denied: Unknown role");
         }
 
-        // Hash password if present
+        // Duplicate username check (friendlier than DB error)
+        try {
+            User existing = userDAO.getUserByUsername(user.getUsername());
+            if (existing != null) {
+                throw new ServiceException("Username already exists. Choose another.");
+            }
+        } catch (DaoException e) {
+            throw new ServiceException("Error checking existing username", e);
+        }
+
+        // Hash & save
         try {
             if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
                 user.setPassword(PasswordUtils.hashPassword(user.getPassword()));
             }
             return userDAO.addUser(user);
         } catch (DaoException e) {
+            // Fall back to readable message if DB still rejects (e.g., unique index)
             throw new ServiceException("Error while adding user", e);
         } catch (Exception e) {
             throw new ServiceException("Password hashing error", e);
+        }
+    }
+
+
+    /** Admin-only: list staff users */
+    public List<User> listStaff(String performedByRole) throws ServiceException {
+        if (!"ADMIN".equalsIgnoreCase(performedByRole)) {
+            throw new ServiceException("Permission denied: Only Admin can view staff.");
+        }
+        try {
+            return userDAO.listByRole("STAFF");
+        } catch (DaoException e) {
+            throw new ServiceException("Error fetching staff", e);
         }
     }
 
@@ -64,16 +87,22 @@ public class UserService {
             if (!user.isActive()) {
                 throw new ServiceException("Account is inactive");
             }
-            // storedHash is expected to be HEX (any case). PasswordUtils takes care of case.
+
             String storedHash = user.getPassword();
-            if (!PasswordUtils.verifyPassword(password, storedHash)) {
-                throw new ServiceException("Invalid username or password");
+
+            // ✅ use positive condition
+            if (PasswordUtils.verifyPassword(password, storedHash)) {
+                return user;
             }
-            return user;
+
+            // no match
+            throw new ServiceException("Invalid username or password");
+
         } catch (DaoException e) {
             throw new ServiceException("Error during authentication", e);
         }
     }
+
 
     // Enable/Disable users (Admin only)
     public boolean setUserActiveStatus(int userId, boolean isActive, String performedByRole) throws ServiceException {
