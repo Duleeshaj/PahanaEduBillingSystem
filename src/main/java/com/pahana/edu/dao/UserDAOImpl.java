@@ -19,7 +19,7 @@ public class UserDAOImpl implements UserDAO {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getPassword()); // hashed already in Service
             stmt.setString(3, user.getRole());
-            stmt.setBoolean(4, true); // new users are active by default
+            stmt.setBoolean(4, true);
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
@@ -27,7 +27,6 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
-    /**DAO-level auth (optional): fetch by username (active=1) and verify with PasswordUtils.*/
     @Override
     public User getUserByUsernameAndPassword(String username, String password) throws DaoException {
         final String sql = "SELECT user_id, username, password, role, active FROM users WHERE username = ? AND active = 1";
@@ -40,23 +39,25 @@ public class UserDAOImpl implements UserDAO {
                 if (!rs.next()) return null;
 
                 String storedHash = rs.getString("password");
-                // Use the same verification (SHA-256 → HEX UPPER)
-                if (!PasswordUtils.verifyPassword(password, storedHash)) {
-                    return null;
+
+                // ✅ use positive condition
+                if (PasswordUtils.verifyPassword(password, storedHash)) {
+                    return new User(
+                            rs.getInt("user_id"),
+                            rs.getString("username"),
+                            storedHash,
+                            rs.getString("role"),
+                            rs.getBoolean("active")
+                    );
                 }
 
-                return new User(
-                        rs.getInt("user_id"),
-                        rs.getString("username"),
-                        storedHash,                     // keep hashed password set
-                        rs.getString("role"),
-                        rs.getBoolean("active")
-                );
+                return null; // no match
             }
         } catch (SQLException e) {
             throw new DaoException("Failed to authenticate user at DAO", e);
         }
     }
+
 
     @Override
     public User getUserByUsername(String username) throws DaoException {
@@ -71,7 +72,7 @@ public class UserDAOImpl implements UserDAO {
                     return new User(
                             rs.getInt("user_id"),
                             rs.getString("username"),
-                            rs.getString("password"), // hashed password (as stored)
+                            rs.getString("password"),
                             rs.getString("role"),
                             rs.getBoolean("active")
                     );
@@ -105,7 +106,7 @@ public class UserDAOImpl implements UserDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, newHashedPassword); // already hashed in Service
+            stmt.setString(1, newHashedPassword);
             stmt.setInt(2, userId);
             return stmt.executeUpdate() > 0;
 
@@ -130,5 +131,29 @@ public class UserDAOImpl implements UserDAO {
         } catch (SQLException e) {
             throw new DaoException("Failed to retrieve audit logs", e);
         }
+    }
+
+    @Override
+    public List<User> listByRole(String role) throws DaoException {
+        final String sql = "SELECT user_id, username, password, role, active FROM users WHERE UPPER(role)=UPPER(?) ORDER BY username";
+        final List<User> result = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, role);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(new User(
+                            rs.getInt("user_id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("role"),
+                            rs.getBoolean("active")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DaoException("Failed to list users by role", e);
+        }
+        return result;
     }
 }
